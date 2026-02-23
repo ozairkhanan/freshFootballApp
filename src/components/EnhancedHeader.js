@@ -5,14 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Image,
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import SportDropdown from './SportDropdown';
-import { navIcons, transferIcons, profileIcons } from '../assets';
 import {
   isTablet,
   isLargeTablet,
@@ -20,7 +17,6 @@ import {
 } from '../utils/responsive';
 
 const { width } = Dimensions.get('window');
-const isSmallDevice = width < 360;
 
 // Keep original icon size
 const ICON_SIZE = 24;
@@ -47,7 +43,7 @@ const EnhancedHeader = ({
             activeOpacity={0.7}
           >
             <View style={styles.circleButton}>
-              <Image source={navIcons.search} style={styles.headerIcon} />
+              <Icon name="magnify" size={ICON_SIZE} color="#1d2e2a" />
             </View>
           </TouchableOpacity>
 
@@ -72,10 +68,7 @@ const EnhancedHeader = ({
                 activeOpacity={0.7}
               >
                 <View style={styles.circleButton}>
-                  <Image
-                    source={navIcons.transfer}
-                    style={[styles.headerIcon, { tintColor: '#000' }]}
-                  />
+                  <Icon name="swap-horizontal" size={ICON_SIZE} color="#1d2e2a" />
                 </View>
               </TouchableOpacity>
             )}
@@ -91,10 +84,7 @@ const EnhancedHeader = ({
                 activeOpacity={0.7}
               >
                 <View style={[styles.circleButton, styles.basketballButton]}>
-                  <Image
-                    source={navIcons.trophy}
-                    style={[styles.headerIcon, { tintColor: '#ff9800' }]}
-                  />
+                  <Icon name="trophy-outline" size={ICON_SIZE} color="#ff9800" />
                 </View>
               </TouchableOpacity>
             )}
@@ -107,10 +97,7 @@ const EnhancedHeader = ({
               activeOpacity={0.7}
             >
               <View style={styles.circleButton}>
-                <Image
-                  source={navIcons.profileSetting}
-                  style={styles.headerIcon}
-                />
+                <Icon name="account-circle-outline" size={ICON_SIZE} color="#1d2e2a" />
               </View>
             </TouchableOpacity>
           </View>
@@ -166,12 +153,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-  },
-  // Keep same size as original Icon (24px)
-  headerIcon: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    resizeMode: 'contain',
   },
   basketballButton: {
     backgroundColor: 'rgba(255, 152, 0, 0.15)',

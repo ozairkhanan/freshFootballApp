@@ -17,7 +17,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { gradients } from '../theme';
 import { searchTeams, searchLeagues } from '../api/sportsApi';
-import { sportsIcons, sportSelectionIcons } from '../assets';
 import {
   isTablet,
   isLargeTablet,
@@ -31,31 +30,31 @@ const SPORTS = [
   {
     key: 'football',
     label: 'Foot Ball',
-    icon: sportsIcons.football,
+    icon: 'soccer',
     color: '#00ffe7',
   },
   {
     key: 'basketball',
     label: 'Basketball',
-    icon: sportsIcons.basketball,
+    icon: 'basketball',
     color: '#00ffe7',
   },
   {
     key: 'hockey',
     label: 'Hockey',
-    icon: sportsIcons.hockey,
+    icon: 'hockey-puck',
     color: '#00ffe7',
   },
   {
     key: 'volleyball',
     label: 'Volleyball',
-    icon: sportsIcons.volleyball,
+    icon: 'volleyball',
     color: '#00ffe7',
   },
   {
     key: 'handball',
     label: 'Handball',
-    icon: sportsIcons.handball,
+    icon: 'handball',
     color: '#00ffe7',
   },
 ];
@@ -120,7 +119,9 @@ const SearchScreen = ({ navigation, route }) => {
         style={styles.sportDropdown}
         onPress={() => setShowSportDropdown(!showSportDropdown)}
       >
-        <Image source={getCurrentSport().icon} style={styles.sportIcon} />
+        <View style={[styles.sportIconWrapper, { backgroundColor: `${getCurrentSport().color}25` }]}>
+          <Icon name={getCurrentSport().icon} size={16} color={getCurrentSport().color} />
+        </View>
         <Text style={styles.sportDropdownText}>{getCurrentSport().label}</Text>
         <Icon
           name={showSportDropdown ? 'chevron-up' : 'chevron-down'}
@@ -145,7 +146,9 @@ const SearchScreen = ({ navigation, route }) => {
                 setHasSearched(false);
               }}
             >
-              <Image source={sport.icon} style={styles.sportIconDropdown} />
+              <View style={[styles.sportIconDropdownWrapper, { backgroundColor: `${sport.color}15` }]}>
+                <Icon name={sport.icon} size={18} color={sport.color} />
+              </View>
               <Text style={styles.dropdownItemText}>{sport.label}</Text>
             </TouchableOpacity>
           ))}
@@ -221,10 +224,7 @@ const SearchScreen = ({ navigation, route }) => {
               {name}
             </Text>
             <View style={styles.cardMeta}>
-              <Image
-                source={getCurrentSport().icon}
-                style={styles.sportIconSmall}
-              />
+              <Icon name={getCurrentSport().icon} size={14} color={getCurrentSport().color} />
               <Text style={styles.cardMetaText}>
                 {country ? `${country} • ` : ''}
                 {getCurrentSport().label}
@@ -391,6 +391,20 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     resizeMode: 'contain',
+  },
+  sportIconWrapper: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sportIconDropdownWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sportIconSmall: {
     width: 14,

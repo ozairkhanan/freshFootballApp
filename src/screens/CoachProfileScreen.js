@@ -15,7 +15,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { gradients } from '../theme';
 import { getCoaches } from '../api/sportsApi';
-import ShimmerCard from '../components/ShimmerCard';
+import { LoadingCard } from '../components/common/CommonUI';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -145,7 +145,7 @@ const CoachProfileScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.shimmerBox}>
-            <ShimmerCard />
+            <LoadingCard />
           </View>
         </LinearGradient>
       </SafeAreaView>

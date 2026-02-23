@@ -20,8 +20,8 @@ import {
   getTeamSquad,
   getCoaches,
 } from '../api/sportsApi';
-import ShimmerCard from '../components/ShimmerCard';
-import EnhancedMatchCard from '../components/EnhancedMatchCard';
+import { LoadingCard } from '../components/common/CommonUI';
+import UnifiedMatchCard from '../components/common/UnifiedMatchCard';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -323,7 +323,7 @@ const TeamProfileScreen = ({ route, navigation }) => {
           }
 
           return (
-            <EnhancedMatchCard
+            <UnifiedMatchCard
               key={fixtureId || index}
               fixture={fixture}
               index={index}
@@ -566,7 +566,7 @@ const TeamProfileScreen = ({ route, navigation }) => {
   const renderShimmerLoading = () => (
     <View style={styles.shimmerContainer}>
       {[1, 2, 3, 4].map(i => (
-        <ShimmerCard key={i} />
+        <LoadingCard key={i} sport={sport} />
       ))}
     </View>
   );

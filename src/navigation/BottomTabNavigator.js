@@ -10,18 +10,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
-import { navIcons, liveIcons, finishedIcons } from '../assets';
-
-const { width } = Dimensions.get('window');
-const isTablet = width >= 768;
-
-const Tab = createBottomTabNavigator();
-
-// Icon size constants - maintain original sizes
-const ICON_SIZE = isTablet ? 28 : 24;
-
-// Custom Tab Icon with Image support
-const TabIcon = ({ iconName, focused, label, isLive, imageSource }) => {
+// Custom Tab Icon with Vector Icon support
+const TabIcon = ({ iconName, focused, isLive }) => {
   const activeColor = '#A1FF0F'; // Neon Green matching the design
 
   if (isLive) {
@@ -40,22 +30,6 @@ const TabIcon = ({ iconName, focused, label, isLive, imageSource }) => {
     );
   }
 
-  // If imageSource is provided, use Image component
-  if (imageSource) {
-    return (
-      <View style={styles.tabIconContainer}>
-        <Image
-          source={imageSource}
-          style={[
-            styles.tabImage,
-            { tintColor: focused ? activeColor : '#ffffff' },
-          ]}
-        />
-      </View>
-    );
-  }
-
-  // Fallback to Icon component (maintains original behavior)
   return (
     <View style={styles.tabIconContainer}>
       <Icon
@@ -100,7 +74,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ focused }) => (
-            <TabIcon imageSource={navIcons.home} focused={focused} />
+            <TabIcon iconName="home-outline" focused={focused} />
           ),
         }}
       >
@@ -141,7 +115,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarLabel: 'Finished',
           tabBarIcon: ({ focused }) => (
-            <TabIcon imageSource={finishedIcons.finished} focused={focused} />
+            <TabIcon iconName="check-circle-outline" focused={focused} />
           ),
         }}
       >
@@ -161,7 +135,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarLabel: 'Upcoming',
           tabBarIcon: ({ focused }) => (
-            <TabIcon imageSource={navIcons.calendar} focused={focused} />
+            <TabIcon iconName="calendar-clock" focused={focused} />
           ),
         }}
       >
@@ -181,7 +155,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarLabel: 'Following',
           tabBarIcon: ({ focused }) => (
-            <TabIcon imageSource={navIcons.followings} focused={focused} />
+            <TabIcon iconName="heart-outline" focused={focused} />
           ),
         }}
       >

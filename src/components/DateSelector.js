@@ -8,7 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import CustomCalendarModal from './CustomCalendarModal';
+import CalendarModal from './CalendarModal';
 
 const { width } = Dimensions.get('window');
 
@@ -107,7 +107,7 @@ const DateSelector = ({ selectedDate, onSelectDate }) => {
         </TouchableOpacity>
       </View>
 
-      <CustomCalendarModal
+      <CalendarModal
         visible={showPicker}
         initialDate={selectedDate}
         onClose={() => setShowPicker(false)}

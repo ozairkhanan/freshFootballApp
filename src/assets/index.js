@@ -3,8 +3,8 @@
 
 // ========== SPLASH SCREEN ==========
 export const splashAssets = {
-  centerBall: require('./splash/center ball.png'),
-  logo: require('./splash/dummy logo.png'),
+  centerBall: require('./splash/center_ball.png'),
+  logo: require('./splash/dummy_logo.png'),
 };
 
 // ========== SPORTS ICONS ==========

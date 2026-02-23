@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import EnhancedMatchCard from '../EnhancedMatchCard'; // Import the design component
+import UnifiedMatchCard from '../common/UnifiedMatchCard';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -268,7 +268,7 @@ const H2HTab = ({ h2h, sport = 'football' }) => {
         </View>
 
         {games.map((game, index) => (
-          <EnhancedMatchCard
+          <UnifiedMatchCard
             key={game.fixture?.id || game.id || index}
             fixture={game}
             sport={sport}

@@ -1,24 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-  TouchableOpacity,
-  Dimensions,
-  ActivityIndicator,
-  ScrollView,
-  Platform,
-} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
+import BaseStandings, { StandingsHeaderCell, StandingsRow } from '../components/common/BaseStandings';
+import { TeamLogo } from '../components/common/CommonUI';
+import useStandings from '../hooks/useStandings';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { gradients } from '../theme';
-import { getStandingsGroups } from '../api/sportsApi';
-import HockeyStandingsTable from '../components/hockey/HockeyStandingsTable';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
+
+const HOCKEY_COLOR = '#00bcd4';
 
 const HockeyStandingsScreen = ({ route, navigation }) => {
   const {
@@ -27,245 +17,165 @@ const HockeyStandingsScreen = ({ route, navigation }) => {
     season = '2024',
   } = route.params || {};
 
+  const { standings, loading, error, hasGroups, refresh } = useStandings(leagueId, season, 'hockey');
   const [activeGroup, setActiveGroup] = useState(0);
-  const [standings, setStandings] = useState(null);
-  const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchStandings();
-  }, [leagueId, season]);
-
-  const fetchStandings = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      console.log(
-        `🏒 Fetching hockey standings: League ${leagueId}, Season ${season}`,
-      );
-
-      const data = await getStandingsGroups(leagueId, season, 'hockey');
-
-      if (data.response && data.response.length > 0) {
-        setStandings(data.response);
-
-        // Extract group names
-        const groupNames = data.response.map(group => {
-          if (Array.isArray(group) && group.length > 0) {
-            return group[0].group?.name || group[0].groupName || 'Standings';
-          }
-          return 'Standings';
-        });
-        setGroups(groupNames);
-      } else {
-        setStandings([]);
-      }
-
-      setLoading(false);
-    } catch (err) {
-      console.error('❌ Hockey standings error:', err);
-      setError(err.message || 'Failed to load standings');
-      setLoading(false);
+  const groups = Array.isArray(standings) ? standings.map(group => {
+    if (Array.isArray(group) && group.length > 0) {
+      return group[0].group?.name || group[0].groupName || 'Standings';
     }
-  };
+    return 'Standings';
+  }) : [];
 
-  const handleTeamPress = teamId => {
-    if (teamId) {
-      navigation.navigate('TeamProfile', {
-        teamId,
-        sport: 'hockey',
-        leagueId,
-        season,
-      });
-    }
-  };
+  const currentTeams = Array.isArray(standings) ? (standings[activeGroup] || []) : [];
 
-  if (loading) {
+  const renderHeader = () => (
+    <View style={styles.tableHeader}>
+      <StandingsHeaderCell width={isTablet ? 50 : 40}>#</StandingsHeaderCell>
+      <StandingsHeaderCell flex={1} style={{ alignItems: 'flex-start', paddingLeft: 8 }}>Team</StandingsHeaderCell>
+      <StandingsHeaderCell width={isTablet ? 45 : 35}>GP</StandingsHeaderCell>
+      <StandingsHeaderCell width={isTablet ? 45 : 35}>W</StandingsHeaderCell>
+      <StandingsHeaderCell width={isTablet ? 45 : 35}>L</StandingsHeaderCell>
+      <StandingsHeaderCell width={isTablet ? 45 : 35}>OTL</StandingsHeaderCell>
+      <StandingsHeaderCell width={isTablet ? 50 : 40}>PTS</StandingsHeaderCell>
+    </View>
+  );
+
+  const renderRow = (team, index) => {
+    const position = team.position || index + 1;
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" />
-        <LinearGradient colors={gradients.background} style={styles.background}>
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}
-            >
-              <Icon name="arrow-left" size={isTablet ? 28 : 24} color="#fff" />
-            </TouchableOpacity>
-            <View style={styles.headerCenter}>
-              <Text style={styles.headerTitle}>{leagueName}</Text>
-              <Text style={styles.headerSubtitle}>{season} Season</Text>
-            </View>
-            <View style={styles.backButton} />
+      <StandingsRow 
+        key={team.team?.id || index} 
+        item={team} 
+        index={index} 
+        isEven={index % 2 === 0}
+        onPress={(id) => navigation.navigate('TeamProfile', { teamId: id, sport: 'hockey' })}
+      >
+        <View style={styles.cellWidth(isTablet ? 50 : 40)}>
+          <View style={styles.rankBadge}>
+            <Text style={styles.rankText}>{position}</Text>
           </View>
-
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#00bcd4" />
-            <Text style={styles.loadingText}>Loading standings...</Text>
-          </View>
-        </LinearGradient>
-      </SafeAreaView>
-    );
-  }
-
-  if (error) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" />
-        <LinearGradient colors={gradients.background} style={styles.background}>
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}
-            >
-              <Icon name="arrow-left" size={isTablet ? 28 : 24} color="#fff" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{leagueName}</Text>
-            <View style={styles.backButton} />
-          </View>
-
-          <View style={styles.errorContainer}>
-            <Icon
-              name="alert-circle-outline"
-              size={isTablet ? 80 : 64}
-              color="#ff3d3d"
-            />
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={fetchStandings}
-            >
-              <Text style={styles.retryText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        </LinearGradient>
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <LinearGradient colors={gradients.background} style={styles.background}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Icon name="arrow-left" size={isTablet ? 28 : 24} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>{leagueName}</Text>
-            <Text style={styles.headerSubtitle}>{season} Standings</Text>
-          </View>
-          <View style={styles.backButton} />
         </View>
 
-        {groups.length > 1 && (
-          <View style={styles.tabsWrapper}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.tabsContainer}
-            >
-              {groups.map((group, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.tabButton,
-                    activeGroup === index && styles.tabButtonActive,
-                  ]}
-                  onPress={() => setActiveGroup(index)}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      activeGroup === index && styles.tabTextActive,
-                    ]}
-                  >
-                    {group}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
+        <View style={styles.teamInfo}>
+          <TeamLogo logo={team.team?.logo} sport="hockey" color={HOCKEY_COLOR} size={28} />
+          <Text style={styles.teamName} numberOfLines={1}>
+            {team.team?.name || 'Unknown'}
+          </Text>
+        </View>
 
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {standings && standings.length > 0 ? (
-            <>
-              <View style={styles.groupHeader}>
-                <Icon name="trophy-outline" size={20} color="#00bcd4" />
-                <Text style={styles.groupTitle}>
-                  {groups[activeGroup] || 'League Ranking'}
+        <Text style={styles.statCell}>{team.games?.played || 0}</Text>
+        <Text style={styles.statCell}>{team.games?.win?.total || 0}</Text>
+        <Text style={styles.statCell}>{team.games?.lose?.total || 0}</Text>
+        <Text style={styles.statCell}>{team.games?.lose?.overtime || 0}</Text>
+        <View style={styles.ptsCell}>
+          <Text style={styles.ptsText}>{team.points || 0}</Text>
+        </View>
+      </StandingsRow>
+    );
+  };
+
+  return (
+    <BaseStandings
+      title={leagueName}
+      subtitle={`${season} Standings`}
+      sport="hockey"
+      sportColor={HOCKEY_COLOR}
+      sportIcon="hockey-puck"
+      loading={loading}
+      error={error}
+      standings={currentTeams}
+      onRetry={refresh}
+      onBack={() => navigation.goBack()}
+      renderHeader={renderHeader}
+      renderRow={renderRow}
+    >
+      {groups.length > 1 && (
+        <View style={styles.tabsWrapper}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
+            {groups.map((group, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[styles.tabButton, activeGroup === index && styles.tabButtonActive]}
+                onPress={() => setActiveGroup(index)}
+              >
+                <Text style={[styles.tabText, activeGroup === index && styles.tabTextActive]}>
+                  {group}
                 </Text>
-              </View>
-              <HockeyStandingsTable
-                teams={standings[activeGroup]}
-                onTeamPress={handleTeamPress}
-              />
-            </>
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Icon
-                name="clipboard-text-outline"
-                size={64}
-                color="rgba(255,255,255,0.1)"
-              />
-              <Text style={styles.emptyText}>No standings data available</Text>
-            </View>
-          )}
-        </ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+      
+      {currentTeams.length > 0 && (
+        <View style={styles.groupHeader}>
+          <Icon name="trophy-outline" size={20} color={HOCKEY_COLOR} />
+          <Text style={styles.groupTitle}>{groups[activeGroup] || 'League Ranking'}</Text>
+        </View>
+      )}
+    </BaseStandings>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
-  background: { flex: 1 },
-  header: {
+  tableHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? 24 : 16,
-    paddingVertical: isTablet ? 20 : 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(0, 188, 212, 0.15)',
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(0, 188, 212, 0.3)',
   },
-  backButton: {
-    width: isTablet ? 50 : 40,
-    height: isTablet ? 50 : 40,
+  cellWidth: (w) => ({
+    width: w,
+    alignItems: 'center',
+  }),
+  rankBadge: {
+    width: isTablet ? 32 : 28,
+    height: isTablet ? 32 : 28,
+    borderRadius: isTablet ? 16 : 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerCenter: { flex: 1, alignItems: 'center' },
-  headerTitle: {
-    color: '#fff',
-    fontSize: isTablet ? 24 : 20,
-    fontWeight: '900',
+  rankText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: isTablet ? 15 : 13,
+    fontWeight: '800',
   },
-  headerSubtitle: {
-    color: '#00bcd4',
+  teamInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 8,
+  },
+  teamName: {
+    color: '#fff',
     fontSize: isTablet ? 16 : 14,
     fontWeight: '700',
-    marginTop: 4,
+    flex: 1,
+    marginLeft: 10,
   },
-  tabsWrapper: {
-    marginBottom: 8,
+  statCell: {
+    width: isTablet ? 45 : 35,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: isTablet ? 15 : 13,
+    fontWeight: '600',
+    textAlign: 'center',
   },
-  tabsContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  ptsCell: {
+    width: isTablet ? 50 : 40,
+    alignItems: 'center',
   },
+  ptsText: {
+    color: HOCKEY_COLOR,
+    fontSize: isTablet ? 16 : 14,
+    fontWeight: '900',
+  },
+  tabsWrapper: { marginBottom: 8 },
+  tabsContainer: { paddingHorizontal: 16, paddingVertical: 8 },
   tabButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -277,76 +187,25 @@ const styles = StyleSheet.create({
   },
   tabButtonActive: {
     backgroundColor: 'rgba(0, 188, 212, 0.2)',
-    borderColor: '#00bcd4',
+    borderColor: HOCKEY_COLOR,
   },
   tabText: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: 14,
     fontWeight: '700',
   },
-  tabTextActive: {
-    color: '#00bcd4',
-  },
-  scrollView: { flex: 1 },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
+  tabTextActive: { color: HOCKEY_COLOR },
   groupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    paddingHorizontal: 16,
   },
   groupTitle: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '800',
     marginLeft: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: 'rgba(255,255,255,0.6)',
-    marginTop: 16,
-    fontSize: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  errorText: {
-    color: '#ff3d3d',
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: 24,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: '#00bcd4',
-  },
-  retryText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  emptyContainer: {
-    marginTop: 80,
-    alignItems: 'center',
-  },
-  emptyText: {
-    color: 'rgba(255,255,255,0.3)',
-    marginTop: 16,
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 

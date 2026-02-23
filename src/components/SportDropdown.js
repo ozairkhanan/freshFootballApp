@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Image, // Added Image import
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -13,14 +12,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
 
-// ✅ UPDATED: Added Handball & Real Images
 const SPORTS = [
-  { id: 'football', name: 'Football', icon: 'soccer', image: require('../assets/sports/football.png'), color: '#00ffe7', enabled: true },
-  { id: 'basketball', name: 'Basketball', icon: 'basketball', image: require('../assets/sports/basketball.png'), color: '#ff9800', enabled: true },
-  { id: 'hockey', name: 'Hockey', icon: 'hockey-puck', image: require('../assets/sports/hockey.png'), color: '#00bcd4', enabled: true },
-  { id: 'volleyball', name: 'Volleyball', icon: 'volleyball', image: require('../assets/sports/volleyball.png'), color: '#9c27b0', enabled: true },
-  { id: 'handball', name: 'Handball', icon: 'handball', image: require('../assets/sports/handball.png'), color: '#4caf50', enabled: true },
-  { id: 'mma', name: 'MMA', icon: 'boxing-glove', color: '#f44336', enabled: false }, // No image yet
+  { id: 'football', name: 'Football', icon: 'soccer', color: '#00ffe7', enabled: true },
+  { id: 'basketball', name: 'Basketball', icon: 'basketball', color: '#ff9800', enabled: true },
+  { id: 'hockey', name: 'Hockey', icon: 'hockey-puck', color: '#00bcd4', enabled: true },
+  { id: 'volleyball', name: 'Volleyball', icon: 'volleyball', color: '#9c27b0', enabled: true },
+  { id: 'handball', name: 'Handball', icon: 'handball', color: '#4caf50', enabled: true },
+  { id: 'mma', name: 'MMA', icon: 'boxing-glove', color: '#f44336', enabled: false },
   { id: 'tennis', name: 'Tennis', icon: 'tennis', color: '#9e9e9e', enabled: false },
   { id: 'baseball', name: 'Baseball', icon: 'baseball', color: '#9e9e9e', enabled: false },
 ];
@@ -52,21 +50,13 @@ const SportDropdown = ({ selectedSport, onSelectSport }) => {
         >
           <View style={[
             styles.sportIconWrapper,
-            !selectedSportData?.image && { backgroundColor: `${selectedSportData?.color}30` }
+            { backgroundColor: `${selectedSportData?.color}25` }
           ]}>
-            {selectedSportData?.image ? (
-              <Image
-                source={selectedSportData.image}
-                style={styles.sportIcon}
-                resizeMode="contain"
-              />
-            ) : (
-              <Icon
-                name={selectedSportData?.icon}
-                size={isTablet ? 24 : 20}
-                color={selectedSportData?.color || "#fff"}
-              />
-            )}
+            <Icon
+              name={selectedSportData?.icon}
+              size={isTablet ? 24 : 20}
+              color={selectedSportData?.color || "#fff"}
+            />
           </View>
           <Text style={styles.sportName}>{selectedSportData?.name}</Text>
           <Icon
@@ -98,28 +88,19 @@ const SportDropdown = ({ selectedSport, onSelectSport }) => {
               >
                 <View style={[
                   styles.menuItemIconWrapper,
-                  selectedSport === sport.id && !sport.image && styles.menuItemIconWrapperActive,
-                  sport.image && { backgroundColor: 'transparent' }
+                  selectedSport === sport.id ? styles.menuItemIconWrapperActive : { backgroundColor: `${sport.color}15` }
                 ]}>
-                  {sport.image ? (
-                    <Image
-                      source={sport.image}
-                      style={styles.menuSportIcon}
-                      resizeMode="contain"
-                    />
-                  ) : (
-                    <Icon
-                      name={sport.icon}
-                      size={22}
-                      color={
-                        selectedSport === sport.id
-                          ? '#fff'
-                          : !sport.enabled
-                            ? 'rgba(255, 255, 255, 0.2)'
-                            : sport.color
-                      }
-                    />
-                  )}
+                  <Icon
+                    name={sport.icon}
+                    size={22}
+                    color={
+                      selectedSport === sport.id
+                        ? '#fff'
+                        : !sport.enabled
+                          ? 'rgba(255, 255, 255, 0.2)'
+                          : sport.color
+                    }
+                  />
                 </View>
                 <Text
                   style={[
@@ -165,22 +146,15 @@ const styles = StyleSheet.create({
     margin: 10,
     width: '85%',
     height: 45,
-    // paddingHorizontal: isTablet ? 14 : 12,
-    // paddingVertical: isTablet ? 10 : 8,
     borderWidth: 1,
     borderColor: 'rgba(0, 255, 231, 0.3)',
     borderRadius: 24,
     justifyContent: 'center',
-
   },
   sportIconWrapper: {
-    // width: isTablet ? 36 : 32,
-    // height: isTablet ? 36 : 32,
-    // borderRadius: isTablet ? 18 : 16,
     width: 34,
     height: 34,
-    padding: 5,
-    // backgroundColor: 'rgba(0, 255, 231, 0.25)',
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -189,9 +163,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    // fontSize: isTablet ? 16 : 15,
-    // fontWeight: '800',
-    // marginRight: 8,
     letterSpacing: 0.3,
   },
   dropdownMenu: {
@@ -235,7 +206,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   menuItemIconWrapperActive: {
     backgroundColor: '#00ffe7',
@@ -259,22 +229,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 0.5,
-  },
-  checkWrapper: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'rgba(0, 255, 231, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sportIcon: {
-    width: '90%',
-    height: '90%',
-  },
-  menuSportIcon: {
-    width: '80%',
-    height: '80%',
   },
 });
 

@@ -12,30 +12,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { gradients } from '../theme';
-import {
-  getFixtureById,
-  getFixtureStatistics,
-  getFixtureEvents,
-  getFixtureLineups,
-  getFixtureH2H,
-  getFixtureOdds,
-  getFixtureInjuries,
-  getFixturePrediction,
-} from '../api/sportsApi';
-
-
-import FixtureHeader from '../components/fixtureDetails/FixtureHeader';
-import FixtureTabs from '../components/fixtureDetails/FixtureTabs';
-import OverviewTab from '../components/fixtureDetails/OverviewTab';
-import StatsTab from '../components/fixtureDetails/StatsTab';
-import EventsTab from '../components/fixtureDetails/EventsTab';
-import LineupsTab from '../components/fixtureDetails/LineupsTab';
-import H2HTab from '../components/fixtureDetails/H2HTab';
-import OddsTab from '../components/fixtureDetails/OddsTab';
-import InjuriesTab from '../components/fixtureDetails/InjuriesTab';
-import PredictionTab from '../components/fixtureDetails/PredictionTab';
-
-import ShimmerCard from '../components/ShimmerCard';
+import { LoadingCard } from '../components/common/CommonUI';
 
 const FixtureDetailsScreen = ({ route, navigation }) => {
   const { fixtureId, sport = 'football' } = route.params;
@@ -223,7 +200,7 @@ const FixtureDetailsScreen = ({ route, navigation }) => {
   const renderShimmerLoading = () => (
     <View style={styles.shimmerContainer}>
       {[1, 2, 3, 4].map(i => (
-        <ShimmerCard key={i} />
+        <LoadingCard key={i} sport={sport} />
       ))}
     </View>
   );

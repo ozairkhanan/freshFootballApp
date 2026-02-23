@@ -16,9 +16,9 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { gradients } from '../theme';
 import useLiveFixtures from '../hooks/useLiveFixtures';
-import EnhancedMatchCard from '../components/EnhancedMatchCard';
-import ShimmerCard from '../components/ShimmerCard';
+import UnifiedMatchCard from '../components/common/UnifiedMatchCard';
 import EnhancedHeader from '../components/EnhancedHeader';
+import { LoadingCard } from '../components/common/CommonUI';
 import DateSelector from '../components/DateSelector';
 import {
   isTabletStatic as isTablet,
@@ -225,7 +225,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
   };
 
   const renderItem = ({ item, index }) => (
-    <EnhancedMatchCard
+    <UnifiedMatchCard
       fixture={item}
       index={index}
       onPress={handleFixturePress}
@@ -236,7 +236,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
   const renderShimmerLoading = () => (
     <View style={styles.shimmerContainer}>
       {[1, 2, 3, 4, 5].map(i => (
-        <ShimmerCard key={i} />
+        <LoadingCard key={i} sport={selectedSport} />
       ))}
     </View>
   );
@@ -398,8 +398,6 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
           <EnhancedHeader
             selectedSport={selectedSport}
             onSelectSport={handleSportChange}
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
             liveCount={getLiveCount()}
             showLiveCount={!filter}
           />
