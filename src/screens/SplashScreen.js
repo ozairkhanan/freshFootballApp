@@ -13,24 +13,22 @@ import { splashAssets } from '../assets';
 
 const { width, height } = Dimensions.get('window');
 
-// Generate grid-based dot pattern for background
 const generateDots = () => {
   const dots = [];
-  const spacing = 20; // Space between dots
+  const spacing = 20; 
   const cols = Math.ceil(width / spacing) + 2;
   const rows = Math.ceil(height / spacing) + 2;
 
   let id = 0;
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      // Add slight randomness to grid positions
       const offsetX = (Math.random() - 0.5) * 8;
       const offsetY = (Math.random() - 0.5) * 8;
       dots.push({
         id: id++,
         left: col * spacing + offsetX,
         top: row * spacing + offsetY,
-        size: Math.random() * 2 + 1.5, // 1.5-3.5px dots
+        size: Math.random() * 2 + 1.5,
       });
     }
   }
