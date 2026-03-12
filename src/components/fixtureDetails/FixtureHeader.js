@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
 
-const FixtureHeader = ({ teams, homeScore, awayScore, status, sport }) => {
+const FixtureHeader = ({ teams, homeScore, awayScore, status, sport, venue, aggScore, environment }) => {
   // Determine if match is live/finished for score display
   const isLive = [
     '1H',
@@ -37,6 +37,16 @@ const FixtureHeader = ({ teams, homeScore, awayScore, status, sport }) => {
         return 'volleyball';
       default:
         return 'soccer';
+    }
+  };
+
+  const getWeatherIcon = (id) => {
+    switch (id) {
+      case 1: return 'weather-partly-cloudy';
+      case 2: return 'weather-cloudy';
+      case 5: return 'weather-sunny';
+      case 9: return 'weather-rainy';
+      default: return 'weather-cloudy';
     }
   };
 
@@ -151,16 +161,35 @@ const FixtureHeader = ({ teams, homeScore, awayScore, status, sport }) => {
           </View>
         </View>
 
-        {/* 🟢 FOOTER (Status / Elapsed) */}
+        {/* 🟢 FOOTER (Status / Elapsed / Environment) */}
         <View style={styles.footerContainer}>
-          {status?.elapsed && (
-            <View style={styles.liveBadge}>
-              <View style={styles.liveDot} />
-              <Text style={styles.liveText}>{status.elapsed}'</Text>
-            </View>
-          )}
-          <Icon name={getSportIcon()} size={16} color="rgba(255,255,255,0.2)" />
+          <View style={styles.footerLeft}>
+            {status?.elapsed && (
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>{status.elapsed}'</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.metaRight}>
+            {environment?.temperature && (
+              <View style={styles.weatherBadge}>
+                <Icon name={getWeatherIcon(environment.weather)} size={14} color="#00FFE7" />
+                <Text style={styles.weatherText}>{environment.temperature}</Text>
+              </View>
+            )}
+            <Icon name={getSportIcon()} size={16} color="rgba(255,255,255,0.2)" />
+          </View>
         </View>
+
+        {venue ? (
+          <View style={styles.venueContainer}>
+            <Text style={styles.venueText} numberOfLines={1}>
+              <Icon name="stadium-variant" size={12} color="rgba(255,255,255,0.4)" /> {venue}
+            </Text>
+          </View>
+        ) : null}
       </LinearGradient>
     </View>
   );
@@ -253,22 +282,22 @@ const styles = StyleSheet.create({
   },
 
   namePillLeft: {
-    paddingVertical: 10,
-    paddingLeft: 24,
-    paddingRight: 10,
+    paddingVertical: 8,
+    paddingLeft: 40,
+    paddingRight: 16,
     borderRadius: 20,
-    minHeight: 40,
+    height: 44,
     justifyContent: 'center',
     flex: 1,
   },
   namePillRight: {
-    paddingVertical: 10,
-    paddingRight: 24,
-    paddingLeft: 10,
+    paddingVertical: 8,
+    paddingRight: 40,
+    paddingLeft: 16,
     borderRadius: 20,
-    minHeight: 40,
+    height: 44,
     justifyContent: 'center',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     flex: 1,
   },
 
@@ -276,7 +305,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: isTablet ? 14 : 12,
     fontWeight: '700',
-    flex: 1,
+    textAlign: 'center',
   },
 
   logoImage: {
@@ -330,9 +359,15 @@ const styles = StyleSheet.create({
   // FOOTER
   footerContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: -8,
+    paddingHorizontal: 16,
+  },
+  footerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   liveBadge: {
     flexDirection: 'row',
@@ -354,6 +389,55 @@ const styles = StyleSheet.create({
     color: '#ff1744',
     fontSize: 12,
     fontWeight: '700',
+  },
+  positionText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 10,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  aggText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  venueContainer: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+    marginTop: 8,
+    paddingTop: 8,
+    alignItems: 'center',
+  },
+  venueText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 10,
+    paddingHorizontal: 16,
+  },
+  rankFooterText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 10,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  metaRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  weatherBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 255, 231, 0.05)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  weatherText: {
+    color: '#00FFE7',
+    fontSize: 11,
+    fontWeight: '600',
+    marginLeft: 4,
   },
 });
 

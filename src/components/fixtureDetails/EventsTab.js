@@ -142,27 +142,40 @@ const HockeyEvents = ({ events }) => {
   );
 };
 
-// ✅ FOOTBALL EVENTS
+// ✅ FOOTBALL EVENTS — Full detail_live integration
 const FootballEvents = ({ events }) => {
   const getEventIcon = (type, detail) => {
     switch (type) {
       case 'Goal':
-        if (detail === 'Own Goal') return { name: 'football', color: '#f44336', library: 'Ionicons' };
-        if (detail === 'Penalty') return { name: 'football', color: '#ff9800', library: 'Ionicons' };
+        if (detail?.includes('Own Goal')) return { name: 'football', color: '#f44336', library: 'Ionicons' };
+        if (detail?.includes('Penalty')) return { name: 'football', color: '#ff9800', library: 'Ionicons' };
         return { name: 'football', color: '#4caf50', library: 'Ionicons' };
       case 'Card':
-        if (detail === 'Yellow Card') return { name: 'card', color: '#ffeb3b', library: 'Ionicons' };
-        if (detail === 'Red Card') return { name: 'card', color: '#f44336', library: 'Ionicons' };
-        return { name: 'card', color: '#ff9800', library: 'Ionicons' };
+        if (detail?.includes('Red') || detail?.includes('Upgrade')) return { name: 'card', color: '#f44336', library: 'Ionicons' };
+        return { name: 'card', color: '#ffeb3b', library: 'Ionicons' };
       case 'subst':
-        return { name: 'repeat', color: '#2196f3', library: 'Ionicons' };
+        return { name: 'swap-horizontal-outline', color: '#2196f3', library: 'Ionicons' };
       case 'Var':
         return { name: 'videocam-outline', color: '#9c27b0', library: 'Ionicons' };
+      case 'Kickoff':
+        return { name: 'play-circle-outline', color: '#00ffe7', library: 'Ionicons' };
+      case 'InjuryTime':
+        return { name: 'timer-outline', color: '#ff9800', library: 'Ionicons' };
+      case 'HalfEnd':
+        return { name: 'pause-circle-outline', color: '#90a4ae', library: 'Ionicons' };
+      case 'MatchEnd':
+        return { name: 'flag-outline', color: '#e91e63', library: 'Ionicons' };
+      case 'ExtraTime':
+        return { name: 'time-outline', color: '#ff5722', library: 'Ionicons' };
+      case 'PenaltyEnd':
+        return { name: 'stop-circle-outline', color: '#e91e63', library: 'Ionicons' };
       default:
         return { name: 'ellipse-outline', color: '#00ffe7', library: 'Ionicons' };
     }
   };
 
+  // Check if this is a "phase" event (no player, just match info)
+  const isPhaseEvent = (type) => ['Kickoff', 'InjuryTime', 'HalfEnd', 'MatchEnd', 'ExtraTime', 'PenaltyEnd'].includes(type);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -179,12 +192,14 @@ const FootballEvents = ({ events }) => {
 
         {events.map((event, index) => {
           const icon = getEventIcon(event.type, event.detail);
+          const timeDisplay = event.time?.display || event.time?.elapsed || '-';
+          const isPhase = isPhaseEvent(event.type);
 
           return (
-            <View key={index} style={styles.eventRow}>
+            <View key={index} style={[styles.eventRow, isPhase && styles.phaseRow]}>
               <View style={styles.eventTime}>
-                <Text style={styles.eventMinute}>
-                  {event.time?.elapsed || '-'}'
+                <Text style={[styles.eventMinute, isPhase && styles.phaseMinute]}>
+                  {timeDisplay}'
                 </Text>
               </View>
 
@@ -207,8 +222,10 @@ const FootballEvents = ({ events }) => {
 
               <View style={styles.eventDetails}>
                 <View style={styles.eventHeaderRow}>
-                  <Text style={styles.eventType}>{event.type}</Text>
-                  {event.team?.name && (
+                  <Text style={[styles.eventType, isPhase && { color: icon.color }]}>
+                    {isPhase ? event.detail : event.type}
+                  </Text>
+                  {event.team?.name && !isPhase && (
                     <View style={styles.eventTeamBadge}>
                       {event.team.logo && (
                         <Image
@@ -223,14 +240,36 @@ const FootballEvents = ({ events }) => {
                   )}
                 </View>
 
+                {/* Player name */}
                 {event.player?.name && (
                   <Text style={styles.eventPlayer}>{event.player.name}</Text>
                 )}
+
+                {/* First assist */}
                 {event.assist?.name && (
                   <Text style={styles.eventAssist}>Assist: {event.assist.name}</Text>
                 )}
-                {event.detail && (
+
+                {/* Second assist */}
+                {event.assist2?.name && (
+                  <Text style={styles.eventAssist}>Assist 2: {event.assist2.name}</Text>
+                )}
+
+                {/* Running score after goal */}
+                {event.score && event.type === 'Goal' && (
+                  <View style={styles.scoreBadge}>
+                    <Text style={styles.scoreBadgeText}>{event.score}</Text>
+                  </View>
+                )}
+
+                {/* Detail (card type, VAR reason→result, sub in/out) */}
+                {event.detail && !isPhase && (
                   <Text style={styles.eventComment}>{event.detail}</Text>
+                )}
+
+                {/* Card reason */}
+                {event.reasonType && (
+                  <Text style={styles.eventReason}>Reason: {event.reasonType}</Text>
                 )}
               </View>
 
@@ -398,6 +437,40 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.5)',
     fontSize: 10,
     fontWeight: '600',
+  },
+  // === New styles for full detail_live support ===
+  phaseRow: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 8,
+    marginVertical: 4,
+    paddingVertical: isTablet ? 10 : 8,
+    borderBottomWidth: 0,
+  },
+  phaseMinute: {
+    color: '#90a4ae',
+    fontWeight: '800',
+  },
+  scoreBadge: {
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  scoreBadgeText: {
+    color: '#4caf50',
+    fontSize: isTablet ? 14 : 13,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  eventReason: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: isTablet ? 12 : 11,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
 });
 

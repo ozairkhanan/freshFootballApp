@@ -16,6 +16,7 @@ const SPORT_TABS = {
   football: [
     'overview',
     'stats',
+    'commentary',
     'events',
     'lineups',
     'h2h',
@@ -36,6 +37,7 @@ const SPORT_TABS = {
 const TAB_LABELS = {
   overview: 'Overview',
   stats: 'Stats',
+  commentary: 'Commentary',
   events: 'Events',
   lineups: 'Lineups',
   h2h: 'H2H',

@@ -56,9 +56,12 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
   // Handle fixture card press - Navigate to details
   const handleFixturePress = fixtureId => {
     console.log('🎯 Fixture pressed:', fixtureId);
+    // Format date as YYYY-MM-DD for the API
+    const formattedDate = selectedDate.toISOString().split('T')[0];
     navigation.navigate('FixtureDetails', {
       fixtureId,
       sport: selectedSport,
+      date: formattedDate,
     });
   };
 

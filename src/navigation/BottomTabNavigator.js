@@ -10,6 +10,11 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
+import { isTabletStatic as isTablet } from '../utils/responsive';
+
+const Tab = createBottomTabNavigator();
+const ICON_SIZE = isTablet ? 28 : 24;
+
 // Custom Tab Icon with Vector Icon support
 const TabIcon = ({ iconName, focused, isLive }) => {
   const activeColor = '#A1FF0F'; // Neon Green matching the design

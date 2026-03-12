@@ -27,9 +27,19 @@ const OverviewTab = ({ fixture, venueDetails, lineups, sport = 'football', navig
     <SectionHeader title={title} icon={icon} sportColor={config.color} />
   );
 
+  const renderMomentum = () => {
+    if (!trendData) return null;
+    return <MomentumChart trendData={trendData} homeTeam={fixture.teams?.home} awayTeam={fixture.teams?.away} sport={sport} />;
+  };
+
   const renderInfoSection = () => {
     const matchDate = fixture.date || fixture.fixture?.date;
     const venue = fixture.venue || venueDetails;
+    
+    // Support both string venue (new mapping) and object venue (old/specific lookup)
+    const venueValue = typeof venue === 'string' 
+      ? venue 
+      : (venue?.name ? `${venue.name}${venue.city ? `, ${venue.city}` : ''}` : null);
     
     return (
       <Card sportColor={config.color}>
@@ -50,12 +60,16 @@ const OverviewTab = ({ fixture, venueDetails, lineups, sport = 'football', navig
         
         <InfoRow label="Time" value={fixture.time || fixture.fixture?.status?.long || 'TBD'} icon="clock-outline" iconColor={config.color} />
         
-        {venue && (
-          <InfoRow label="Venue" value={`${venue.name}${venue.city ? `, ${venue.city}` : ''}`} icon="map-marker-outline" iconColor={config.color} />
+        {venueValue && (
+          <InfoRow label="Venue" value={venueValue} icon="map-marker-outline" iconColor={config.color} />
         )}
 
-        {fixture.fixture?.referee && (
-          <InfoRow label="Referee" value={fixture.fixture.referee} icon="whistle-outline" iconColor={config.color} />
+        {(fixture.referee || fixture.fixture?.referee) && (
+          <InfoRow label="Referee" value={fixture.referee || fixture.fixture.referee} icon="whistle-outline" iconColor={config.color} />
+        )}
+
+        {fixture.environment?.temperature && (
+          <InfoRow label="Weather" value={`${fixture.environment.temperature} (${fixture.environment.humidity} Hum)`} icon="weather-cloudy" iconColor={config.color} />
         )}
       </Card>
     );
@@ -121,6 +135,9 @@ const OverviewTab = ({ fixture, venueDetails, lineups, sport = 'football', navig
           <View style={styles.finalTeam}>
             <TeamLogo logo={fixture.teams?.home?.logo || fixture.homeTeam?.logo} sport={sport} color={config.color} size={isTablet ? 60 : 50} />
             <Text style={styles.finalTeamName}>{fixture.teams?.home?.name || fixture.homeTeam?.name}</Text>
+            {fixture.teams?.home?.position && (
+              <Text style={styles.finalRankText}>Rank: {fixture.teams.home.position}</Text>
+            )}
           </View>
           <View style={styles.finalScoreBox}>
             <Text style={[styles.finalScoreText, { color: config.color }]}>
@@ -131,6 +148,9 @@ const OverviewTab = ({ fixture, venueDetails, lineups, sport = 'football', navig
           <View style={styles.finalTeam}>
             <TeamLogo logo={fixture.teams?.away?.logo || fixture.awayTeam?.logo} sport={sport} color={config.color} size={isTablet ? 60 : 50} />
             <Text style={styles.finalTeamName}>{fixture.teams?.away?.name || fixture.awayTeam?.name}</Text>
+            {fixture.teams?.away?.position && (
+              <Text style={styles.finalRankText}>Rank: {fixture.teams.away.position}</Text>
+            )}
           </View>
         </View>
       </Card>
@@ -168,6 +188,12 @@ const styles = StyleSheet.create({
   finalScoreBox: { alignItems: 'center', paddingHorizontal: 16 },
   finalScoreText: { fontSize: 32, fontWeight: '900' },
   finalLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '700', marginTop: 4 },
+  finalRankText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 10,
+    fontWeight: '600',
+    marginTop: 2,
+  },
 });
 
 export default OverviewTab;

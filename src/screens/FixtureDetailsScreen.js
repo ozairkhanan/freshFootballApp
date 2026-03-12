@@ -14,8 +14,36 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { gradients } from '../theme';
 import { LoadingCard } from '../components/common/CommonUI';
 
+// API Imports
+import {
+  getFixtureById,
+  getFixtureStatistics,
+  getFixtureLineups,
+  getFixtureEvents,
+  getFixtureH2H,
+  getFixtureInjuries,
+  getFixturePrediction,
+  getFixtureOdds,
+  getFixtureTrend,
+  getVenueInfo,
+  getFixtureCommentary,
+} from '../api/sportsApi';
+
+// Component Imports
+import FixtureHeader from '../components/fixtureDetails/FixtureHeader';
+import FixtureTabs from '../components/fixtureDetails/FixtureTabs';
+import OverviewTab from '../components/fixtureDetails/OverviewTab';
+import StatsTab from '../components/fixtureDetails/StatsTab';
+import EventsTab from '../components/fixtureDetails/EventsTab';
+import LineupsTab from '../components/fixtureDetails/LineupsTab';
+import H2HTab from '../components/fixtureDetails/H2HTab';
+import OddsTab from '../components/fixtureDetails/OddsTab';
+import InjuriesTab from '../components/fixtureDetails/InjuriesTab';
+import PredictionTab from '../components/fixtureDetails/PredictionTab';
+import CommentaryTab from '../components/fixtureDetails/CommentaryTab';
+
 const FixtureDetailsScreen = ({ route, navigation }) => {
-  const { fixtureId, sport = 'football' } = route.params;
+  const { fixtureId, sport = 'football', date: initialDate } = route.params;
 
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
@@ -28,6 +56,8 @@ const FixtureDetailsScreen = ({ route, navigation }) => {
   const [injuries, setInjuries] = useState(null);
   const [prediction, setPrediction] = useState(null);
   const [venueDetails, setVenueDetails] = useState(null);
+  const [trendData, setTrendData] = useState(null);
+  const [commentary, setCommentary] = useState(null);
 
   useEffect(() => {
     fetchFixtureDetails();
@@ -38,117 +68,120 @@ const FixtureDetailsScreen = ({ route, navigation }) => {
       setLoading(true);
       console.log(`📱 FixtureDetailsScreen: Navigated with fixtureId=${fixtureId}, sport=${sport}`);
       
-      const { getVenueInfo } = require('../api/sportsApi').default || require('../api/sportsApi');
-
-      // Get fixture details
-      const fixtureData = await getFixtureById(fixtureId, sport);
+      // Step 1: Get fixture details FIRST (needed for team IDs for H2H)
+      const fixtureData = await getFixtureById(fixtureId, sport, initialDate);
       const fixtureInfo = fixtureData.response[0];
       setFixture(fixtureInfo);
 
-      // ✅ LOAD VENUE DETAILS (If available)
+      // Step 2: Fire ALL other calls in parallel
+      const promises = [];
+      const promiseLabels = [];
+
+      // Venue
       const venueId = fixtureInfo?.fixture?.venue?.id || fixtureInfo?.venue?.id;
       if (venueId && sport === 'football') {
-        try {
-          const vData = await getVenueInfo(venueId, sport);
-          if (vData.response && vData.response.length > 0) {
-            setVenueDetails(vData.response[0]);
-          }
-        } catch (err) {
-          console.log('Venue details not available');
-        }
+        promises.push(getVenueInfo(venueId, sport).catch(() => null));
+        promiseLabels.push('venue');
       }
 
-      // ✅ LOAD STATS FOR ALL SPORTS (except handball - not available)
+      // Stats
       if (sport !== 'handball') {
-        try {
-          const statsData = await getFixtureStatistics(fixtureId, sport);
-          setStatistics(statsData.response);
-        } catch (err) {
-          console.log('Stats not available:', err.message);
-        }
+        promises.push(getFixtureStatistics(fixtureId, sport).catch(() => null));
+        promiseLabels.push('stats');
       }
 
-      // ✅ LOAD LINEUPS/PLAYERS FOR ALL SPORTS (except volleyball & handball)
+      // Lineups
       if (sport !== 'volleyball' && sport !== 'handball') {
-        try {
-          const lineupsData = await getFixtureLineups(fixtureId, sport);
-          setLineups(lineupsData.response);
-        } catch (err) {
-          console.log('Lineups not available:', err.message);
-        }
+        promises.push(getFixtureLineups(fixtureId, sport).catch(() => null));
+        promiseLabels.push('lineups');
       }
 
-      // ✅ LOAD H2H FOR ALL SPORTS INCLUDING HANDBALL
+      // H2H
       if (fixtureInfo?.teams?.home?.id && fixtureInfo?.teams?.away?.id) {
-        try {
-          const h2hData = await getFixtureH2H(
-            fixtureInfo.teams.home.id,
-            fixtureInfo.teams.away.id,
-            sport,
-            10,
-          );
-          // ✅ FIXED: Set the full object, not just .response
-          setH2h(h2hData);
-        } catch (err) {
-          console.log('H2H not available:', err.message);
-        }
+        promises.push(getFixtureH2H(fixtureInfo.teams.home.id, fixtureInfo.teams.away.id, sport, 10).catch(() => null));
+        promiseLabels.push('h2h');
       }
 
-      // ⚠️ FOOTBALL-ONLY FEATURES
+      // Football-only
       if (sport === 'football') {
-        try {
-          const eventsData = await getFixtureEvents(fixtureId, sport);
-          setEvents(eventsData.response);
-        } catch (err) {
-          console.log('Events not available');
-        }
-
-        try {
-          const injuriesData = await getFixtureInjuries(fixtureId, sport);
-          setInjuries(injuriesData.response);
-        } catch (err) {
-          console.log('Injuries not available');
-        }
-
-        try {
-          const predictionData = await getFixturePrediction(fixtureId, sport);
-          setPrediction(predictionData.response[0]);
-        } catch (err) {
-          console.log('Prediction not available');
-        }
+        promises.push(getFixtureEvents(fixtureId, sport).catch(() => null));
+        promiseLabels.push('events');
+        promises.push(getFixtureInjuries(fixtureId, sport).catch(() => null));
+        promiseLabels.push('injuries');
+        promises.push(getFixtureCommentary(fixtureId, sport).catch(() => null));
+        promiseLabels.push('commentary');
+        promises.push(getFixturePrediction(fixtureId, sport).catch(() => null));
+        promiseLabels.push('prediction');
       }
 
-      // ✅ HOCKEY-ONLY FEATURES
+      // Hockey events
       if (sport === 'hockey') {
-        try {
-          const eventsData = await getFixtureEvents(fixtureId, sport);
-          setEvents(eventsData.response);
-        } catch (err) {
-          console.log('Events not available for hockey');
-        }
+        promises.push(getFixtureEvents(fixtureId, sport).catch(() => null));
+        promiseLabels.push('events');
       }
 
-      // ✅ LOAD ODDS FOR FOOTBALL, BASKETBALL, HOCKEY, VOLLEYBALL & HANDBALL
-      if (
-        sport === 'football' ||
-        sport === 'basketball' ||
-        sport === 'hockey' ||
-        sport === 'volleyball' ||
-        sport === 'handball'
-      ) {
-        try {
-          const oddsData = await getFixtureOdds(fixtureId, sport);
-          setOdds(oddsData);
-        } catch (err) {
-          console.log('Odds not available');
-        }
+      // Odds
+      if (['football', 'basketball', 'hockey', 'volleyball', 'handball'].includes(sport)) {
+        promises.push(getFixtureOdds(fixtureId, sport).catch(() => null));
+        promiseLabels.push('odds');
       }
 
+      // Trend / Momentum
+      promises.push(getFixtureTrend(fixtureId, sport).catch(() => null));
+      promiseLabels.push('trend');
 
+      // Wait for ALL to complete in parallel
+      const results = await Promise.all(promises);
+
+      // Map results back to state
+      results.forEach((result, idx) => {
+        const label = promiseLabels[idx];
+        if (!result) return;
+        try {
+          switch (label) {
+            case 'venue':
+              if (result.response?.[0]) setVenueDetails(result.response[0]);
+              break;
+            case 'stats':
+              if (result.response) setStatistics(result.response);
+              break;
+            case 'lineups':
+              if (result.response) setLineups(result.response);
+              break;
+            case 'h2h':
+              setH2h(result);
+              break;
+            case 'events':
+              if (result.response) setEvents(result.response);
+              break;
+            case 'injuries':
+              if (result.response) setInjuries(result.response);
+              break;
+            case 'commentary':
+              if (result.response) setCommentary(result.response);
+              break;
+            case 'prediction':
+              if (result.response?.[0]) setPrediction(result.response[0]);
+              break;
+            case 'odds':
+              setOdds(result);
+              break;
+            case 'trend':
+              if (result.response) setTrendData(result.response);
+              break;
+          }
+        } catch (parseErr) {
+          console.log(`⚠️ Error processing ${label}:`, parseErr.message);
+        }
+      });
 
       setLoading(false);
     } catch (error) {
-      console.error('Error loading fixture details:', error);
+      console.error('❌ Error loading fixture details:', error?.message || error);
+      if (error?.response) {
+        console.error(`❌ API returned ${error.response.status}: ${JSON.stringify(error.response.data)}`);
+        console.error(`❌ Failed URL: ${error.config?.url}`);
+      }
       setLoading(false);
     }
   };
@@ -210,7 +243,9 @@ const FixtureDetailsScreen = ({ route, navigation }) => {
       case 'overview':
         return <OverviewTab fixture={fixture} venueDetails={venueDetails} lineups={lineups} sport={sport} navigation={navigation} />;
       case 'stats':
-        return <StatsTab statistics={statistics} sport={sport} />;
+        return <StatsTab statistics={statistics} trendData={trendData} homeTeam={fixture?.teams?.home} awayTeam={fixture?.teams?.away} sport={sport} />;
+      case 'commentary':
+        return <CommentaryTab commentary={commentary} sport={sport} />;
       case 'events':
         return <EventsTab events={events} />;
       case 'lineups':
@@ -319,6 +354,9 @@ const FixtureDetailsScreen = ({ route, navigation }) => {
           awayScore={awayScore}
           status={status}
           sport={sport}
+          venue={fixture.venue || venueDetails?.name}
+          aggScore={fixture.agg_score}
+          environment={fixture.environment}
         />
 
         {/* Tabs */}
