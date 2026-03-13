@@ -133,8 +133,7 @@ const LineupsTab = ({ lineups, sport = 'football', navigation }) => {
       <View key={index}>
         <TouchableOpacity 
           style={styles.playerRow}
-          onPress={() => hasStats ? toggleExpand(playerId) : null}
-          activeOpacity={hasStats ? 0.7 : 1}
+          onPress={() => navigation?.navigate('PlayerProfile', { playerId: playerId, playerName: player.name || player.player?.name })}
         >
           {/* Player image or number */}
           {playerLogo ? (
@@ -187,13 +186,21 @@ const LineupsTab = ({ lineups, sport = 'football', navigation }) => {
             </View>
           )}
 
-          {/* Expand indicator */}
-          {hasStats && (
-            <Icon 
-              name={isExpanded ? 'chevron-up' : 'chevron-down'} 
-              size={18} 
-              color="rgba(255,255,255,0.2)" 
-            />
+          {/* Expand stats button */}
+          {hasStats ? (
+            <TouchableOpacity 
+              onPress={(e) => { e.stopPropagation?.(); toggleExpand(playerId); }}
+              style={styles.expandBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Icon 
+                name={isExpanded ? 'chevron-up' : 'chevron-down'} 
+                size={18} 
+                color="rgba(255,255,255,0.3)" 
+              />
+            </TouchableOpacity>
+          ) : (
+            <Icon name="chevron-right" size={18} color="rgba(255,255,255,0.15)" />
           )}
         </TouchableOpacity>
 
@@ -204,7 +211,7 @@ const LineupsTab = ({ lineups, sport = 'football', navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       {normalizedLineups.map((teamLineup, index) => (
         <Card key={index} sportColor={sportColor}>
           <View style={styles.teamHeader}>
@@ -231,7 +238,7 @@ const LineupsTab = ({ lineups, sport = 'football', navigation }) => {
           )}
         </Card>
       ))}
-    </ScrollView>
+    </View>
   );
 };
 
@@ -371,6 +378,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '700',
+  },
+  expandBtn: {
+    padding: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   rosterList: { marginTop: 8 },
 });

@@ -14,21 +14,6 @@ const apiClient = axios.create({
 // ==================== CORE FIXTURES ====================
 
 /**
- * Get match trend/momentum data
- */
-export const getFixtureTrend = async (fixtureId, sport = 'football') => {
-  try {
-    const response = await apiClient.get(`/fixtures/${fixtureId}/trend`, {
-      params: { sport },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('API Error:', error.message);
-    throw error;
-  }
-};
-
-/**
  * Get fixtures based on tab filter
  * @param {string} sport - football, basketball, hockey, volleyball
  * @param {string} filter - all, live, upcoming, finished, following
@@ -40,7 +25,7 @@ export const getFixtures = async (
 ) => {
   try {
     console.log(`📡 API Call: ${sport} - ${filter}${date ? ' - ' + date : ''}`);
-    const response = await apiClient.get('/fixtures/realtime', {
+    const response = await apiClient.get('/fixtures/all', {
       params: {
         sport,
         filter,
@@ -58,10 +43,10 @@ export const getFixtures = async (
 /**
  * Get single fixture details
  */
-export const getFixtureById = async (fixtureId, sport = 'football', date = null) => {
+export const getFixtureById = async (fixtureId, sport = 'football') => {
   try {
     const response = await apiClient.get(`/fixtures/${fixtureId}`, {
-      params: { sport, date },
+      params: { sport },
     });
     return response.data;
   } catch (error) {
@@ -105,10 +90,10 @@ export const getFixtureLineups = async (fixtureId, sport = 'football') => {
   try {
     console.log(`👥 Fetching lineups for fixture ${fixtureId}`);
 
-    // Basketball/Volleyball use player stats as lineups
+    // Basketball uses different endpoint for player stats
     if (sport === 'basketball' || sport === 'volleyball') {
-      const response = await apiClient.get(`/fixtures/${fixtureId}/player_stats`, {
-        params: { sport },
+      const response = await apiClient.get('/games/statistics/players', {
+        params: { id: fixtureId, sport },
       });
       return response.data;
     }
@@ -129,22 +114,7 @@ export const getFixtureLineups = async (fixtureId, sport = 'football') => {
  */
 export const getFixtureEvents = async (fixtureId, sport = 'football') => {
   try {
-    const response = await apiClient.get(`/fixtures/${fixtureId}/events`, {
-      params: { sport },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('API Error:', error.message);
-    throw error;
-  }
-};
-
-/**
- * Get fixture live commentary (tlive)
- */
-export const getFixtureCommentary = async (fixtureId, sport = 'football') => {
-  try {
-    const response = await apiClient.get(`/fixtures/${fixtureId}/commentary`, {
+    const response = await apiClient.get(`/fixtures/events/${fixtureId}`, {
       params: { sport },
     });
     return response.data;
@@ -223,12 +193,60 @@ export const getFixturePrediction = async (fixtureId, sport = 'football') => {
 };
 
 /**
+ * Get match analysis (H2H, recent form, future matches, goal distribution)
+ */
+export const getFixtureAnalysis = async (fixtureId, sport = 'football') => {
+  try {
+    console.log(`📊 Fetching analysis for fixture ${fixtureId}`);
+    const response = await apiClient.get(`/fixtures/${fixtureId}/analysis`, {
+      params: { sport },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('API Error:', error.message);
+    throw error;
+  }
+};
+
+/**
  * Get odds for a specific fixture
  */
 export const getFixtureOdds = async (fixtureId, sport = 'football') => {
   try {
     console.log(`🎲 Fetching odds for fixture ${fixtureId}`);
     const response = await apiClient.get(`/fixtures/${fixtureId}/odds`, {
+      params: { sport },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('API Error:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Get fixture commentary (Football only)
+ */
+export const getFixtureCommentary = async (fixtureId, sport = 'football') => {
+  try {
+    console.log(`💬 Fetching commentary for fixture ${fixtureId}`);
+    const response = await apiClient.get(`/fixtures/${fixtureId}/commentary`, {
+      params: { sport },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('API Error:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Get fixture trend / momentum data
+ */
+export const getFixtureTrend = async (fixtureId, sport = 'football') => {
+  try {
+    console.log(`📈 Fetching trend for fixture ${fixtureId}`);
+    const response = await apiClient.get(`/fixtures/${fixtureId}/trend`, {
       params: { sport },
     });
     return response.data;
@@ -824,9 +842,11 @@ export default {
   getFixtureEvents,
   getFixtureH2H,
   getFixtureOdds,
-  getFixtureTrend,
   getFixtureInjuries,
   getFixturePrediction,
+  getFixtureAnalysis,
+  getFixtureCommentary,
+  getFixtureTrend,
 
   // Metadata
   getLeagues,

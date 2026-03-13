@@ -7,7 +7,19 @@ const {width} = Dimensions.get('window');
 const isTablet = width >= 768;
 
 const PredictionTab = ({prediction}) => {
-  if (!prediction) {
+  if (prediction === undefined || prediction === null) {
+    return (
+      <View style={styles.tabContent}>
+        <View style={styles.card}>
+           <Text style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: 20 }}>
+             Loading prediction analysis...
+           </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!prediction || Object.keys(prediction).length === 0) {
     return (
       <EmptyState
         icon="crystal-ball"

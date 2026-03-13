@@ -15,7 +15,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { gradients } from '../theme';
 import { getPlayerProfiles, getPlayers, getPlayerSeasons, getTransfers } from '../api/sportsApi';
-import { LoadingCard } from '../components/common/CommonUI';
+import ShimmerCard from '../components/ShimmerCard';
 import TransferCard from '../components/TransferCard';
 
 const { width } = Dimensions.get('window');
@@ -305,8 +305,8 @@ const PlayerProfileScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.shimmerBox}>
-             <LoadingCard />
-             <LoadingCard />
+             <ShimmerCard />
+             <ShimmerCard />
           </View>
         </LinearGradient>
       </SafeAreaView>

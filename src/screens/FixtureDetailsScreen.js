@@ -21,6 +21,7 @@ import {
   getFixtureLineups,
   getFixtureEvents,
   getFixtureH2H,
+  getFixtureAnalysis,
   getFixtureInjuries,
   getFixturePrediction,
   getFixtureOdds,
@@ -36,6 +37,7 @@ import OverviewTab from '../components/fixtureDetails/OverviewTab';
 import StatsTab from '../components/fixtureDetails/StatsTab';
 import EventsTab from '../components/fixtureDetails/EventsTab';
 import LineupsTab from '../components/fixtureDetails/LineupsTab';
+import PitchFormation from '../components/fixtureDetails/PitchFormation';
 import H2HTab from '../components/fixtureDetails/H2HTab';
 import OddsTab from '../components/fixtureDetails/OddsTab';
 import InjuriesTab from '../components/fixtureDetails/InjuriesTab';
@@ -96,8 +98,12 @@ const FixtureDetailsScreen = ({ route, navigation }) => {
         promiseLabels.push('lineups');
       }
 
-      // H2H
-      if (fixtureInfo?.teams?.home?.id && fixtureInfo?.teams?.away?.id) {
+      // H2H / Analysis
+      if (sport === 'football') {
+        // Football uses match analysis API (richer data: form, goal distribution, future matches)
+        promises.push(getFixtureAnalysis(fixtureId, sport).catch(() => null));
+        promiseLabels.push('h2h');
+      } else if (fixtureInfo?.teams?.home?.id && fixtureInfo?.teams?.away?.id) {
         promises.push(getFixtureH2H(fixtureInfo.teams.home.id, fixtureInfo.teams.away.id, sport, 10).catch(() => null));
         promiseLabels.push('h2h');
       }
@@ -249,13 +255,36 @@ const FixtureDetailsScreen = ({ route, navigation }) => {
       case 'events':
         return <EventsTab events={events} />;
       case 'lineups':
-        return <LineupsTab lineups={lineups} sport={sport} navigation={navigation} />;
+        return (
+          <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+            {sport === 'football' && lineups && !Array.isArray(lineups) && (
+              <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+                <PitchFormation
+                  homePlayers={lineups.home || []}
+                  awayPlayers={lineups.away || []}
+                  homeFormation={lineups.homeFormation}
+                  awayFormation={lineups.awayFormation}
+                  homeTeam={fixture?.teams?.home?.name}
+                  awayTeam={fixture?.teams?.away?.name}
+                  confirmed={lineups.confirmed}
+                />
+              </View>
+            )}
+            <LineupsTab lineups={lineups} sport={sport} navigation={navigation} />
+          </ScrollView>
+        );
       case 'h2h':
         return <H2HTab h2h={h2h} sport={sport} />;
       case 'odds':
         return <OddsTab odds={odds} sport={sport} />;
       case 'injuries':
-        return <InjuriesTab injuries={injuries} />;
+        return (
+          <InjuriesTab 
+            injuries={injuries} 
+            homeTeam={fixture?.teams?.home} 
+            awayTeam={fixture?.teams?.away} 
+          />
+        );
       case 'prediction':
         return <PredictionTab prediction={prediction} />;
 
