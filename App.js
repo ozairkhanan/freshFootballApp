@@ -16,16 +16,25 @@ import HockeyStandingsScreen from './src/screens/HockeyStandingsScreen';
 import BrowseBasketballScreen from './src/screens/BrowseBasketballScreen';
 import SplashScreen from './src/screens/SplashScreen';
 
+import SplashAdScreen from './src/screens/SplashAdScreen';
+
 const Stack = createNativeStackNavigator();
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
+  const [showAd, setShowAd] = useState(true); 
 
-  // Show splash screen first
+  // 1. First show the static branding logo (SplashScreen)
   if (showSplash) {
     return <SplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
+  // 2. Next, fire up the video ad check
+  if (showAd) {
+    return <SplashAdScreen onFinish={() => setShowAd(false)} />;
+  }
+
+  // 3. Finally render the main app
   return (
     <NavigationContainer>
       <Stack.Navigator

@@ -48,6 +48,7 @@ const TabIcon = ({ iconName, focused, isLive }) => {
 };
 
 const BottomTabNavigator = () => {
+  console.log('🧭 BottomTabNavigator Rendered');
   const [selectedSport, setSelectedSport] = useState('football');
 
   const handleSportChange = newSport => {

@@ -26,6 +26,7 @@ import {
   getFontSize,
 } from '../utils/responsive';
 import { useWindowDimensions } from 'react-native';
+import AdBanner from '../components/AdBanner';
 
 const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
   const { width: screenWidth } = useWindowDimensions();
@@ -311,6 +312,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
               showLiveCount={!filter}
             />
             {renderShimmerLoading()}
+            <AdBanner />
           </View>
         </LinearGradient>
       </SafeAreaView>
@@ -348,6 +350,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
                 </TouchableOpacity>
               </LinearGradient>
             </View>
+            <AdBanner />
           </View>
         </LinearGradient>
       </SafeAreaView>
@@ -387,6 +390,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
                 </Text>
               </View>
             </View>
+            <AdBanner />
           </View>
         </LinearGradient>
       </SafeAreaView>
@@ -428,9 +432,11 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
               progressBackgroundColor="#1e293b"
             />
           }
+          style={{ flex: 1 }}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
+        <AdBanner />
         </View>
       </LinearGradient>
     </SafeAreaView>
