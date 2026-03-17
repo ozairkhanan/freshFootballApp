@@ -29,10 +29,12 @@ export const TeamLogo = ({ logo, sport = 'football', size = 40, color = '#00ffe7
   );
 };
 
-export const StatusBadge = ({ status, statusLong, isLive, sportColor = '#00ffe7' }) => {
+export const StatusBadge = ({ status, statusLong, isLive, clock, sportColor = '#00ffe7' }) => {
   return (
     <View style={[styles.badge, { backgroundColor: isLive ? '#ff3b30' : 'rgba(255,255,255,0.05)' }]}>
-      <Text style={styles.badgeText}>{isLive ? 'LIVE' : status}</Text>
+      <Text style={styles.badgeText}>
+        {isLive ? (clock?.display || 'LIVE') : status}
+      </Text>
     </View>
   );
 };

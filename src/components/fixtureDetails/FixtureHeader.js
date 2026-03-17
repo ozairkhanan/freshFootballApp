@@ -164,16 +164,21 @@ const FixtureHeader = ({ teams, homeScore, awayScore, status, sport, venue, aggS
         {/* 🟢 FOOTER (Status / Elapsed / Environment) */}
         <View style={styles.footerContainer}>
           <View style={styles.footerLeft}>
-            {status?.elapsed && (
+            {!!status?.clock?.display ? (
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>{status.clock.display}</Text>
+              </View>
+            ) : !!status?.elapsed ? (
               <View style={styles.liveBadge}>
                 <View style={styles.liveDot} />
                 <Text style={styles.liveText}>{status.elapsed}'</Text>
               </View>
-            )}
+            ) : null}
           </View>
 
           <View style={styles.metaRight}>
-            {environment?.temperature && (
+            {(environment?.temperature !== undefined && environment?.temperature !== null) && (
               <View style={styles.weatherBadge}>
                 <Icon name={getWeatherIcon(environment.weather)} size={14} color="#00FFE7" />
                 <Text style={styles.weatherText}>{environment.temperature}</Text>

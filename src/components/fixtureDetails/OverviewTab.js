@@ -100,6 +100,19 @@ const OverviewTab = ({ fixture, venueDetails, lineups, sport = 'football', navig
           items.push({ name: `Q${i + 1}`, home: scores.home[name], away: scores.away[name] });
         }
       });
+      
+      // Multi-OT support
+      if (scores.home?.otBreakdown && Array.isArray(scores.home.otBreakdown)) {
+        scores.home.otBreakdown.forEach((score, i) => {
+          items.push({ 
+            name: scores.home.otBreakdown.length > 1 ? `OT ${i + 1}` : 'OT', 
+            home: score, 
+            away: scores.away.otBreakdown[i] || 0 
+          });
+        });
+      } else if (scores.home?.over_time > 0 || scores.away?.over_time > 0) {
+        items.push({ name: 'OT', home: scores.home.over_time || 0, away: scores.away.over_time || 0 });
+      }
     }
 
     if (items.length === 0) return null;
@@ -123,6 +136,8 @@ const OverviewTab = ({ fixture, venueDetails, lineups, sport = 'football', navig
     );
   };
 
+  const isLive = fixture.status?.short === 'LIVE' || ['Q1', 'Q2', 'Q3', 'Q4', 'OT', 'BT', 'HT'].includes(fixture.status?.short);
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {renderInfoSection()}
@@ -130,7 +145,7 @@ const OverviewTab = ({ fixture, venueDetails, lineups, sport = 'football', navig
       
       {/* Final Result Card */}
       <Card sportColor={config.color}>
-        {renderSectionHeader('Final Result', 'trophy-outline')}
+        {renderSectionHeader(isLive ? 'Live Score' : 'Final Result', 'trophy-outline')}
         <View style={styles.finalScoreContainer}>
           <View style={styles.finalTeam}>
             <TeamLogo logo={fixture.teams?.home?.logo || fixture.homeTeam?.logo} sport={sport} color={config.color} size={isTablet ? 60 : 50} />
@@ -143,7 +158,9 @@ const OverviewTab = ({ fixture, venueDetails, lineups, sport = 'football', navig
             <Text style={[styles.finalScoreText, { color: config.color }]}>
               {fixture.scores?.home?.total ?? fixture.goals?.home ?? 0} - {fixture.scores?.away?.total ?? fixture.goals?.away ?? 0}
             </Text>
-            <Text style={styles.finalLabel}>FINAL</Text>
+            <Text style={styles.finalLabel}>
+              {isLive ? (fixture.status?.clock?.display || fixture.status?.short || 'LIVE') : (fixture.status?.long || 'FINAL')}
+            </Text>
           </View>
           <View style={styles.finalTeam}>
             <TeamLogo logo={fixture.teams?.away?.logo || fixture.awayTeam?.logo} sport={sport} color={config.color} size={isTablet ? 60 : 50} />

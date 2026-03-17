@@ -76,6 +76,7 @@ const UnifiedMatchCard = ({ fixture, sport = 'football', onPress, index }) => {
                 status={data.status} 
                 statusLong={data.statusLong} 
                 isLive={data.isLive} 
+                clock={data.clock}
                 sportColor={sportColor} 
               />
             </>
@@ -130,7 +131,8 @@ const normalizeFixtureData = (fixture, sport) => {
     homeScore, 
     awayScore, 
     isLive, 
-    isFinished, 
+    isFinished,
+    clock: fixture.status?.clock || null,
     hasScore: homeScore !== null && awayScore !== null && (isLive || isFinished)
   };
 };

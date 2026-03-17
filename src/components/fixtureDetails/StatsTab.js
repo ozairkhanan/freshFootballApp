@@ -4,11 +4,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { Card, SectionHeader, StatBar, EmptyState } from '../common/CommonUI';
 import MomentumChart from './MomentumChart';
+import ShotChart from './ShotChart';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
 
-const StatsTab = ({ statistics, trendData, homeTeam, awayTeam, sport = 'football' }) => {
+const StatsTab = ({ statistics, trendData, homeTeam, awayTeam, sport = 'football', shootPoints }) => {
   const [expandedCategories, setExpandedCategories] = useState({});
 
   const getSportColor = () => {
@@ -32,10 +33,22 @@ const StatsTab = ({ statistics, trendData, homeTeam, awayTeam, sport = 'football
     return <MomentumChart trendData={trendData} homeTeam={homeTeam} awayTeam={awayTeam} sport={sport} />;
   };
 
+  const renderShotChart = () => {
+    if (sport !== 'basketball' || !shootPoints || shootPoints.length === 0) return null;
+    return (
+      <ShotChart 
+        shots={shootPoints} 
+        homeTeam={homeTeam?.name} 
+        awayTeam={awayTeam?.name} 
+      />
+    );
+  };
+
   if (!statistics || (Array.isArray(statistics) && statistics.length === 0)) {
     return (
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {renderMomentum()}
+        {renderShotChart()}
         <EmptyState title="No statistics available" icon="chart-bar" />
       </ScrollView>
     );
@@ -46,6 +59,7 @@ const StatsTab = ({ statistics, trendData, homeTeam, awayTeam, sport = 'football
     return (
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {renderMomentum()}
+        {renderShotChart()}
 
         {/* Team headers */}
         <View style={styles.teamHeaderRow}>
@@ -176,6 +190,7 @@ const StatsTab = ({ statistics, trendData, homeTeam, awayTeam, sport = 'football
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {renderMomentum()}
+      {renderShotChart()}
       <Card sportColor={sportColor}>
         <SectionHeader title="Match Statistics" icon="chart-bar" sportColor={sportColor} />
         <View style={styles.statsWrapper}>

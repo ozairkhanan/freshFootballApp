@@ -137,7 +137,9 @@ const MatchRow = ({ match, highlightTeamId, sportColor }) => {
         {match.round > 0 && <Text style={styles.matchRound}>Round {match.round}</Text>}
       </View>
       <Text style={[styles.matchScore, isFinished && { color: '#fff' }]}>
-        {isFinished ? `${match.goals?.home ?? '-'} - ${match.goals?.away ?? '-'}` : 'vs'}
+        {isFinished 
+          ? `${match.goals?.home ?? match.score?.home ?? '-'} - ${match.goals?.away ?? match.score?.away ?? '-'}` 
+          : 'vs'}
       </Text>
     </View>
   );

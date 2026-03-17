@@ -25,7 +25,15 @@ export const getFixtures = async (
 ) => {
   try {
     console.log(`📡 API Call: ${sport} - ${filter}${date ? ' - ' + date : ''}`);
-    const response = await apiClient.get('/fixtures/all', {
+    // ✅ Use isolated sport-specific endpoints for better optimization
+    let url = '/fixtures/all';
+    if (sport === 'basketball') {
+      url = '/basketball/fixtures/realtime';
+    } else if (sport === 'tennis') {
+      url = '/tennis/fixtures/realtime';
+    }
+
+    const response = await apiClient.get(url, {
       params: {
         sport,
         filter,
@@ -65,7 +73,12 @@ export const getFixtureStatistics = async (fixtureId, sport = 'football') => {
     console.log(`📊 Fetching stats for fixture ${fixtureId}`);
 
     // Basketball uses different endpoint
-    if (sport === 'basketball' || sport === 'volleyball') {
+    if (sport === 'basketball') {
+      const response = await apiClient.get(`/basketball/fixtures/${fixtureId}/statistics`);
+      return response.data;
+    }
+
+    if (sport === 'volleyball') {
       const response = await apiClient.get('/games/statistics/teams', {
         params: { id: fixtureId, sport },
       });
@@ -91,7 +104,12 @@ export const getFixtureLineups = async (fixtureId, sport = 'football') => {
     console.log(`👥 Fetching lineups for fixture ${fixtureId}`);
 
     // Basketball uses different endpoint for player stats
-    if (sport === 'basketball' || sport === 'volleyball') {
+    if (sport === 'basketball') {
+      const response = await apiClient.get(`/basketball/fixtures/${fixtureId}/lineup`);
+      return response.data;
+    }
+
+    if (sport === 'volleyball') {
       const response = await apiClient.get('/games/statistics/players', {
         params: { id: fixtureId, sport },
       });
@@ -192,13 +210,16 @@ export const getFixturePrediction = async (fixtureId, sport = 'football') => {
   }
 };
 
-/**
- * Get match analysis (H2H, recent form, future matches, goal distribution)
- */
 export const getFixtureAnalysis = async (fixtureId, sport = 'football') => {
   try {
-    console.log(`📊 Fetching analysis for fixture ${fixtureId}`);
-    const response = await apiClient.get(`/fixtures/${fixtureId}/analysis`, {
+    console.log(`📊 Fetching analysis for fixture ${fixtureId} (${sport})`);
+    
+    // Basketball has its own specific analysis endpoint
+    const url = sport === 'basketball' 
+      ? `/basketball/fixtures/${fixtureId}/analysis` 
+      : `/fixtures/${fixtureId}/analysis`;
+      
+    const response = await apiClient.get(url, {
       params: { sport },
     });
     return response.data;
@@ -256,6 +277,20 @@ export const getFixtureTrend = async (fixtureId, sport = 'football') => {
   }
 };
 
+/**
+ * Get basketball shooting points
+ */
+export const getBasketballShootPoints = async (fixtureId) => {
+  try {
+    console.log(`🏀 Fetching shoot points for fixture ${fixtureId}`);
+    const response = await apiClient.get(`/basketball/fixtures/${fixtureId}/shoot-points`);
+    return response.data;
+  } catch (error) {
+    console.error('API Error:', error.message);
+    throw error;
+  }
+};
+
 // ==================== STANDINGS ====================
 
 /**
@@ -264,6 +299,14 @@ export const getFixtureTrend = async (fixtureId, sport = 'football') => {
 export const getStandings = async (league, season, sport = 'football') => {
   try {
     console.log(`🏆 Fetching standings for league ${league}, season ${season}`);
+    
+    if (sport === 'basketball') {
+      const response = await apiClient.get('/basketball/standings', {
+        params: { league, season }
+      });
+      return response.data;
+    }
+
     const response = await apiClient.get('/standings', {
       params: { league, season, sport },
     });
@@ -326,6 +369,14 @@ export const getStandingsStages = async (
 export const searchTeams = async (query, sport = 'football') => {
   try {
     console.log(`🔍 Searching teams: "${query}"`);
+    
+    if (sport === 'basketball') {
+      const response = await apiClient.get('/basketball/search/teams', {
+        params: { query },
+      });
+      return response.data;
+    }
+
     const response = await apiClient.get('/search/teams', {
       params: { query, sport },
     });
@@ -897,4 +948,5 @@ export default {
   getBasketballGameStatsPlayers,
   getBasketballStandings,
   getBasketballOdds,
+  getBasketballShootPoints,
 };

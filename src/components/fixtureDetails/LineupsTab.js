@@ -28,23 +28,31 @@ const LineupsTab = ({ lineups, sport = 'football', navigation }) => {
       return lineups;
     }
     
-    // Handle football/handball object format
+    // Handle football/basketball/handball object format
     if (lineups.home || lineups.away) {
       const teams = [];
       if (lineups.home) {
+        // Detect Basketball structure: home: { players: [...] } or home: [...]
+        const players = lineups.home.players || (Array.isArray(lineups.home) ? lineups.home : []);
+        
         teams.push({
-          team: lineups.homeTeam || { name: 'Home' },
-          startXI: lineups.home || [],
+          team: lineups.homeTeam || lineups.home.team || { name: 'Home' },
+          startXI: players,
           substitutes: lineups.homeSubs || [],
-          formation: lineups.homeFormation
+          formation: lineups.homeFormation,
+          teamStats: lineups.home.teamStats
         });
       }
       if (lineups.away) {
+        // Detect Basketball structure: away: { players: [...] } or away: [...]
+        const players = lineups.away.players || (Array.isArray(lineups.away) ? lineups.away : []);
+
         teams.push({
-          team: lineups.awayTeam || { name: 'Away' },
-          startXI: lineups.away || [],
+          team: lineups.awayTeam || lineups.away.team || { name: 'Away' },
+          startXI: players,
           substitutes: lineups.awaySubs || [],
-          formation: lineups.awayFormation
+          formation: lineups.awayFormation,
+          teamStats: lineups.away.teamStats
         });
       }
       return teams;
@@ -81,25 +89,43 @@ const LineupsTab = ({ lineups, sport = 'football', navigation }) => {
   };
 
   const renderExpandedStats = (player) => {
-    const statRows = [
-      { label: 'Minutes Played', value: player.minutesPlayed, icon: 'clock-outline' },
-      { label: 'Shots (On Target)', value: player.shots ? `${player.shotsOnTarget}/${player.shots}` : null, icon: 'target' },
-      { label: 'Passes (Accurate)', value: player.passes ? `${player.passesAccuracy}/${player.passes}` : null, icon: 'swap-horizontal' },
-      { label: 'Key Passes', value: player.keyPasses, icon: 'key-variant' },
-      { label: 'Dribbles (Success)', value: player.dribble ? `${player.dribbleSucc}/${player.dribble}` : null, icon: 'run' },
-      { label: 'Tackles', value: player.tackles, icon: 'shoe-cleat' },
-      { label: 'Interceptions', value: player.interceptions, icon: 'hand-back-left' },
-      { label: 'Clearances', value: player.clearances, icon: 'shield-check' },
-      { label: 'Duels (Won)', value: player.duels ? `${player.duelsWon}/${player.duels}` : null, icon: 'sword-cross' },
-      { label: 'Fouls / Fouled', value: (player.fouls || player.wasFouled) ? `${player.fouls}/${player.wasFouled}` : null, icon: 'whistle' },
-    ];
+    let statRows = [];
+    
+    if (sport === 'basketball') {
+      statRows = [
+        { label: 'Points', value: player.points, icon: 'scoreboard' },
+        { label: 'Assists', value: player.assists, icon: 'hand-pointing-right' },
+        { label: 'Rebounds (O/D)', value: player.rebounds ? `${player.rebounds.total} (${player.rebounds.offensive}/${player.rebounds.defensive})` : null, icon: 'basketball-hoop' },
+        { label: 'Steals', value: player.steals, icon: 'hand-back-right' },
+        { label: 'Blocks', value: player.blocks, icon: 'hand-front-right' },
+        { label: 'Turnovers', value: player.turnovers, icon: 'alert-circle-outline' },
+        { label: 'Fouls', value: player.fouls, icon: 'whistle' },
+        { label: 'Plus/Minus', value: player.plusMinus > 0 ? `+${player.plusMinus}` : player.plusMinus, icon: 'plus-minus' },
+        { label: 'FG (Accurate)', value: player.fieldGoals ? `${player.fieldGoals.made}/${player.fieldGoals.attempted} (${player.fieldGoals.percentage}%)` : null, icon: 'target' },
+        { label: '3PT (Accurate)', value: player.threePointers ? `${player.threePointers.made}/${player.threePointers.attempted} (${player.threePointers.percentage}%)` : null, icon: 'shooting-stars' },
+        { label: 'FT (Accurate)', value: player.freeThrows ? `${player.freeThrows.made}/${player.freeThrows.attempted} (${player.freeThrows.percentage}%)` : null, icon: 'bullseye' },
+      ];
+    } else {
+      statRows = [
+        { label: 'Minutes Played', value: player.minutesPlayed, icon: 'clock-outline' },
+        { label: 'Shots (On Target)', value: player.shots ? `${player.shotsOnTarget}/${player.shots}` : null, icon: 'target' },
+        { label: 'Passes (Accurate)', value: player.passes ? `${player.passesAccuracy}/${player.passes}` : null, icon: 'swap-horizontal' },
+        { label: 'Key Passes', value: player.keyPasses, icon: 'key-variant' },
+        { label: 'Dribbles (Success)', value: player.dribble ? `${player.dribbleSucc}/${player.dribble}` : null, icon: 'run' },
+        { label: 'Tackles', value: player.tackles, icon: 'shoe-cleat' },
+        { label: 'Interceptions', value: player.interceptions, icon: 'hand-back-left' },
+        { label: 'Clearances', value: player.clearances, icon: 'shield-check' },
+        { label: 'Duels (Won)', value: player.duels ? `${player.duelsWon}/${player.duels}` : null, icon: 'sword-cross' },
+        { label: 'Fouls / Fouled', value: (player.fouls || player.wasFouled) ? `${player.fouls}/${player.wasFouled}` : null, icon: 'whistle' },
+      ];
 
-    // Add goalkeeper stats if applicable
-    if (player.saves > 0 || player.punches > 0) {
-      statRows.push(
-        { label: 'Saves', value: player.saves, icon: 'hand-wave' },
-        { label: 'Punches', value: player.punches, icon: 'boxing-glove' },
-      );
+      // Add goalkeeper stats if applicable
+      if (player.saves > 0 || player.punches > 0) {
+        statRows.push(
+          { label: 'Saves', value: player.saves, icon: 'hand-wave' },
+          { label: 'Punches', value: player.punches, icon: 'boxing-glove' },
+        );
+      }
     }
 
     const validStats = statRows.filter(s => s.value && s.value !== 0 && s.value !== '0/0');
@@ -173,10 +199,20 @@ const LineupsTab = ({ lineups, sport = 'football', navigation }) => {
 
           {/* Event badges */}
           <View style={styles.badgesRow}>
-            {renderStatMini('soccer', player.goals, '#4CAF50')}
-            {renderStatMini('shoe-cleat', player.assists, '#2196F3')}
-            {renderStatMini('card', player.yellowCards, '#FFC107')}
-            {renderStatMini('card', player.redCards, '#F44336')}
+            {sport === 'basketball' ? (
+              <>
+                {renderStatMini('scoreboard', player.points, sportColor)}
+                {renderStatMini('basketball-hoop', player.rebounds?.total, '#8BC34A')}
+                {renderStatMini('hand-pointing-right', player.assists, '#2196F3')}
+              </>
+            ) : (
+              <>
+                {renderStatMini('soccer', player.goals, '#4CAF50')}
+                {renderStatMini('shoe-cleat', player.assists, '#2196F3')}
+                {renderStatMini('card', player.yellowCards, '#FFC107')}
+                {renderStatMini('card', player.redCards, '#F44336')}
+              </>
+            )}
           </View>
 
           {/* Rating badge */}

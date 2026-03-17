@@ -34,7 +34,85 @@ const EventsTab = ({ events, sport = 'football' }) => {
     return <HockeyEvents events={events} />;
   }
 
+  if (sport === 'basketball') {
+    return <BasketballEvents events={events} />;
+  }
+
   return <FootballEvents events={events} />;
+};
+
+// ✅ BASKETBALL EVENTS
+const BasketballEvents = ({ events }) => {
+  const getEventIcon = (type) => {
+    switch (type) {
+      case 'Point':
+        return { name: 'basketball', color: '#ff9800', library: 'MIcon' };
+      case 'Substitution':
+        return { name: 'swap-horizontal', color: '#2196f3', library: 'MIcon' };
+      case 'Timeout':
+        return { name: 'pause-circle-outline', color: '#90a4ae', library: 'MIcon' };
+      case 'Foul':
+        return { name: 'whistle', color: '#ffeb3b', library: 'MIcon' };
+      case 'Free Throw':
+        return { name: 'hand-back-left', color: '#00bcd4', library: 'MIcon' };
+      default:
+        return { name: 'circle-outline', color: '#ff9800', library: 'MIcon' };
+    }
+  };
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={[styles.card, { borderColor: 'rgba(255, 152, 0, 0.2)' }]}>
+        <View style={styles.cardHeader}>
+          <MIcon
+            name="flash-outline"
+            size={isTablet ? 28 : 24}
+            color="#ff9800"
+          />
+          <Text style={styles.cardTitle}>Play-by-Play</Text>
+        </View>
+
+        {events.map((event, index) => {
+          const icon = getEventIcon(event.type);
+          const scoreDisplay = `${event.homeScore || 0} - ${event.awayScore || 0}`;
+
+          return (
+            <View key={index} style={styles.eventRow}>
+              <View style={styles.eventTime}>
+                <Text style={styles.eventMinute}>{event.time || '-'}</Text>
+              </View>
+
+              <View
+                style={[
+                  styles.eventIconContainer,
+                  { backgroundColor: `${icon.color}20` },
+                ]}
+              >
+                <MIcon
+                  name={icon.name}
+                  size={isTablet ? 20 : 18}
+                  color={icon.color}
+                />
+              </View>
+
+              <View style={styles.eventDetails}>
+                <View style={styles.eventHeaderRow}>
+                  <Text style={styles.eventType}>{event.type}</Text>
+                  <View style={styles.scoreBadge}>
+                    <Text style={styles.scoreBadgeText}>{scoreDisplay}</Text>
+                  </View>
+                </View>
+
+                {event.playerName && (
+                  <Text style={styles.eventPlayer}>{event.playerName}</Text>
+                )}
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    </ScrollView>
+  );
 };
 
 // ✅ HOCKEY EVENTS
