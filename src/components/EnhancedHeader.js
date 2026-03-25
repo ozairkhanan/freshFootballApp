@@ -34,7 +34,7 @@ const EnhancedHeader = ({
       <View style={styles.headerContainer}>
         <View style={styles.headerTop}>
           {/* LEFT: Search Button */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.iconButton}
             onPress={() => {
               console.log('🔍 Search button pressed for:', selectedSport);
@@ -45,7 +45,7 @@ const EnhancedHeader = ({
             <View style={styles.circleButton}>
               <Icon name="magnify" size={ICON_SIZE} color="#1d2e2a" />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* CENTER: Sport Dropdown */}
           <View style={styles.centerContainer}>
@@ -58,7 +58,7 @@ const EnhancedHeader = ({
           {/* RIGHT: Buttons */}
           <View style={styles.rightButtons}>
             {/* Football: Transfer Market */}
-            {selectedSport === 'football' && (
+            {/* {selectedSport === 'football' && (
               <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => {
@@ -71,7 +71,7 @@ const EnhancedHeader = ({
                   <Icon name="swap-horizontal" size={ICON_SIZE} color="#1d2e2a" />
                 </View>
               </TouchableOpacity>
-            )}
+            )} */}
 
             {/* Basketball: Browse Leagues */}
             {selectedSport === 'basketball' && (
@@ -89,7 +89,7 @@ const EnhancedHeader = ({
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity
+{/*             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => {
                 console.log('👤 Profile/Settings pressed');
@@ -99,7 +99,7 @@ const EnhancedHeader = ({
               <View style={styles.circleButton}>
                 <Icon name="account-circle-outline" size={ICON_SIZE} color="#1d2e2a" />
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </View>

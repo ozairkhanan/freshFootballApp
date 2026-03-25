@@ -26,7 +26,8 @@ const SPORT_TABS = {
   ],
 
   basketball: ['overview', 'stats', 'lineups', 'h2h', 'odds'],
-
+  tennis: ['overview', 'stats', 'timeline', 'h2h', 'odds'],
+  cricket: ['overview', 'stats', 'timeline', 'h2h', 'odds'],
   hockey: ['overview', 'stats', 'events', 'h2h', 'odds'],
   volleyball: ['overview', 'h2h', 'odds'],
   mma: ['overview'],
@@ -37,6 +38,7 @@ const SPORT_TABS = {
 const TAB_LABELS = {
   overview: 'Overview',
   stats: 'Stats',
+  timeline: 'Timeline',
   commentary: 'Commentary',
   events: 'Events',
   lineups: 'Lineups',
@@ -54,6 +56,8 @@ const SPORT_COLORS = {
   volleyball: '#9c27b0',
   mma: '#f44336',
   handball: '#4caf50', // ✅ Green for handball
+  tennis: '#A1FF0F',
+  cricket: '#ffeb3b',
 };
 
 const FixtureTabs = ({ sport, activeTab, onTabChange }) => {

@@ -61,26 +61,48 @@ const UnifiedMatchCard = ({ fixture, sport = 'football', onPress, index }) => {
 
         {/* Footer with Score */}
         <View style={styles.footer}>
-          {data.hasScore ? (
-            <>
-              <View style={styles.scoreDisplay}>
-                <Text style={[styles.scoreText, data.homeScore > data.awayScore && styles.winnerScore]}>
-                  {data.homeScore}
-                </Text>
-                <Text style={styles.scoreDivider}>/</Text>
-                <Text style={[styles.scoreText, data.awayScore > data.homeScore && styles.winnerScore]}>
-                  {data.awayScore}
-                </Text>
+          {(data.hasScore || data.isFinished) && (
+            <View style={{flex: 1}}>
+              <View style={styles.scoreRowContainer}>
+                <View style={[styles.scoreDisplay, sport === 'cricket' && { flexDirection: 'column', alignItems: 'center' }]}>
+                  <Text style={[styles.scoreText, data.homeScore > data.awayScore && styles.winnerScore, sport === 'cricket' && { fontSize: 16 }]}>
+                    {data.homeScore}
+                  </Text>
+                  {sport !== 'cricket' && <Text style={styles.scoreDivider}>/</Text>}
+                  <Text style={[styles.scoreText, data.awayScore > data.homeScore && styles.winnerScore, sport === 'cricket' && { fontSize: 16 }]}>
+                    {data.awayScore}
+                  </Text>
+                </View>
+                <StatusBadge 
+                  status={data.status} 
+                  statusLong={data.statusLong} 
+                  isLive={data.isLive} 
+                  clock={data.clock}
+                  sportColor={sportColor} 
+                />
+                {sport === 'tennis' && data.isLive && data.currentPoints && (
+                  <View style={styles.tennisPointsContainer}>
+                    <Text style={styles.pointsLabel}>Points</Text>
+                    <View style={styles.pointsRow}>
+                      <View style={styles.pointPill}>
+                        {data.serving === 1 && <View style={styles.servingDot} />}
+                        <Text style={styles.pointText}>{data.currentPoints.home || '0'}</Text>
+                      </View>
+                      <Text style={styles.pointDivider}>:</Text>
+                      <View style={styles.pointPill}>
+                        {data.serving === 2 && <View style={styles.servingDot} />}
+                        <Text style={styles.pointText}>{data.currentPoints.away || '0'}</Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
               </View>
-              <StatusBadge 
-                status={data.status} 
-                statusLong={data.statusLong} 
-                isLive={data.isLive} 
-                clock={data.clock}
-                sportColor={sportColor} 
-              />
-            </>
-          ) : (
+              {!!data.winDescription && (
+                <Text style={styles.winDescriptionText}>{data.winDescription}</Text>
+              )}
+            </View>
+          )}
+          {!data.hasScore && !data.isFinished && (
             <Text style={styles.statusLongText}>{data.statusLong}</Text>
           )}
         </View>
@@ -108,6 +130,32 @@ const normalizeFixtureData = (fixture, sport) => {
   if (sport === 'football') {
     homeScore = fixture.goals?.home ?? fixture.goalsHome ?? null;
     awayScore = fixture.goals?.away ?? fixture.goalsAway ?? null;
+  } else if (sport === 'cricket') {
+    // Cricket: Show Runs/Wickets (Overs) of the latest inning
+    const hInn = [...(fixture.teams?.home?.innings || []), ...(fixture.homeInnings || [])].slice(-1)[0];
+    const aInn = [...(fixture.teams?.away?.innings || []), ...(fixture.awayInnings || [])].slice(-1)[0];
+    
+    if (hInn) {
+      homeScore = `${hInn.runs}/${hInn.wickets}${hInn.overs !== undefined && hInn.overs !== null ? ` (${hInn.overs})` : ''}`;
+    } else {
+      homeScore = fixture.teams?.home?.score ?? fixture.homeScore ?? '0';
+    }
+
+    if (aInn) {
+      awayScore = `${aInn.runs}/${aInn.wickets}${aInn.overs !== undefined && aInn.overs !== null ? ` (${aInn.overs})` : ''}`;
+    } else {
+      awayScore = fixture.teams?.away?.score ?? fixture.awayScore ?? '0';
+    }
+  } else if (sport === 'tennis') {
+    // Tennis: Show Total Sets and Current Game Points (if live)
+    homeScore = fixture.scores?.home?.total ?? fixture.goals?.home ?? 0;
+    awayScore = fixture.scores?.away?.total ?? fixture.goals?.away ?? 0;
+    
+    const currentPoints = fixture.scores?.currentPoints;
+    if (currentPoints && (currentPoints.home || currentPoints.away)) {
+      base.currentPoints = currentPoints;
+    }
+    base.serving = fixture.serving; // 1: Home, 2: Away
   } else {
     // Basketball, Volleyball, Hockey, Handball typically use .scores.home/away
     homeScore = fixture.scores?.home?.total ?? fixture.scores?.home ?? null;
@@ -120,11 +168,13 @@ const normalizeFixtureData = (fixture, sport) => {
     volleyball: ['S1', 'S2', 'S3', 'S4', 'S5'],
     hockey: ['P1', 'P2', 'P3', 'OT', 'BT', 'PT'],
     handball: ['1H', '2H', 'HT', 'ET', 'BT', 'PT'],
+    cricket: ['LIVE', 'IN', '1st INN', '2nd INN', 'STUMPS', 'TEA', 'LUNCH', 'RAIN'],
+    tennis: ['S1', 'S2', 'S3', 'S4', 'S5', 'TIE', 'LIVE'],
   };
 
   const isLive = (liveStatuses[sport] || []).includes(base.status);
   const finishedStatuses = ['FT', 'AET', 'PEN', 'AOT', 'AW', 'POST', 'CANC', 'ABD', 'ENDED', 'FINAL'];
-  const isFinished = finishedStatuses.includes(base.status) || base.statusLong?.toLowerCase().includes('finished');
+  const isFinished = finishedStatuses.includes(base.status) || base.statusLong?.toLowerCase()?.includes('finished') || false;
 
   return { 
     ...base, 
@@ -140,7 +190,7 @@ const normalizeFixtureData = (fixture, sport) => {
 const formatTime = (timeStr) => {
   if (!timeStr) return 'TBD';
   // If it's a full ISO date string
-  if (timeStr.includes('T')) {
+  if (timeStr && typeof timeStr === 'string' && timeStr.includes('T')) {
     try {
       const date = new Date(timeStr);
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -155,7 +205,9 @@ const getSportColor = (sport) => {
     case 'hockey': return '#00bcd4';
     case 'volleyball': return '#9c27b0';
     case 'handball': return '#4caf50';
-    default: return '#ff9800'; // Default to basketball-like orange or theme primary
+    case 'cricket': return '#ffeb3b';
+    case 'tennis': return '#A1FF0F';
+    default: return '#00ffe7'; // Standard teal theme
   }
 };
 
@@ -280,6 +332,68 @@ const styles = StyleSheet.create({
   statusLongText: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 13,
+  },
+  scoreRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  winDescriptionText: {
+    color: '#A1FF0F',
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
+  tennisPointsContainer: {
+    marginLeft: 12,
+    alignItems: 'center',
+    backgroundColor: 'rgba(161, 255, 15, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(161, 255, 15, 0.2)',
+  },
+  pointsLabel: {
+    color: 'rgba(161, 255, 15, 0.7)',
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  pointsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  pointPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 20,
+  },
+  pointText: {
+    color: '#A1FF0F',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  pointDivider: {
+    color: 'rgba(161, 255, 15, 0.4)',
+    marginHorizontal: 4,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  servingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#A1FF0F',
+    marginRight: 4,
+    shadowColor: '#A1FF0F',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
   },
 });
 

@@ -46,23 +46,7 @@ export const sportThemes = {
       borderColor: 'rgba(0, 255, 231, 0.3)',
     },
   },
-  volleyball: {
-    primary: '#00ffe7',
-    gradient: ['rgba(0, 255, 231, 0.15)', 'rgba(0, 255, 231, 0.05)'],
-    badge: {
-      backgroundColor: 'rgba(0, 255, 231, 0.15)',
-      borderColor: 'rgba(0, 255, 231, 0.3)',
-    },
-  },
-  hockey: {
-    primary: '#00ffe7',
-    gradient: ['rgba(0, 255, 231, 0.15)', 'rgba(0, 255, 231, 0.05)'],
-    badge: {
-      backgroundColor: 'rgba(0, 255, 231, 0.15)',
-      borderColor: 'rgba(0, 255, 231, 0.3)',
-    },
-  },
-  handball: {
+  basketball: {
     primary: '#00ffe7',
     gradient: ['rgba(0, 255, 231, 0.15)', 'rgba(0, 255, 231, 0.05)'],
     badge: {

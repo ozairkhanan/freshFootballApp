@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
 
-const FixtureHeader = ({ teams, homeScore, awayScore, status, sport, venue, aggScore, environment }) => {
+const FixtureHeader = ({ teams, homeScore, awayScore, status, sport, venue, aggScore, environment, battingTeam }) => {
   // Determine if match is live/finished for score display
   const isLive = [
     '1H',
@@ -19,10 +19,9 @@ const FixtureHeader = ({ teams, homeScore, awayScore, status, sport, venue, aggS
     'Q2',
     'Q3',
     'Q4',
-    'S1',
-    'S2',
-    'S3',
-  ].includes(status?.short);
+    'S1', 'S2', 'S3', 'S4', 'S5', 'TIE',
+    '1st INN', '2nd INN', 'STUMPS', 'TEA', 'LUNCH', 'RAIN'
+  ].includes(status?.short) || status?.short === 'LIVE';
   const isFinished = ['FT', 'AET', 'PEN', 'AOT'].includes(status?.short);
   const showScore =
     isLive || isFinished || (homeScore !== undefined && homeScore !== null);
@@ -35,6 +34,10 @@ const FixtureHeader = ({ teams, homeScore, awayScore, status, sport, venue, aggS
         return 'hockey-puck';
       case 'volleyball':
         return 'volleyball';
+      case 'cricket':
+        return 'cricket';
+      case 'tennis':
+        return 'tennis';
       default:
         return 'soccer';
     }
@@ -96,11 +99,19 @@ const FixtureHeader = ({ teams, homeScore, awayScore, status, sport, venue, aggS
               colors={['#145C66', '#0F4C5C']} // Teal Pill Gradient
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.namePillLeft}
+              style={[styles.namePillLeft, battingTeam === 1 && styles.battingPill]}
             >
-              <Text style={styles.teamNameText} numberOfLines={1}>
-                {teams?.home?.name || 'Home'}
-              </Text>
+              <View style={styles.nameContainer}>
+                <Text style={styles.teamNameText} numberOfLines={1}>
+                  {teams?.home?.name || 'Home'}
+                </Text>
+                {battingTeam === 1 && (
+                  <Icon name="cricket" size={14} color="#ffeb3b" style={styles.batIcon} />
+                )}
+                {sport === 'tennis' && status?.serving === 1 && (
+                  <Icon name="tennis-ball" size={14} color="#A1FF0F" style={styles.batIcon} />
+                )}
+              </View>
             </LinearGradient>
           </View>
 
@@ -134,14 +145,22 @@ const FixtureHeader = ({ teams, homeScore, awayScore, status, sport, venue, aggS
           {/* AWAY TEAM PILL */}
           <View style={styles.teamWrapperRight}>
             <LinearGradient
-              colors={['#0F4C5C', '#145C66']} // Teal Pill Gradient (reversed)
+              colors={['#145C66', '#0F4C5C']} // Teal Pill Gradient
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.namePillRight}
+              style={[styles.namePillRight, battingTeam === 2 && styles.battingPill]}
             >
-              <Text style={styles.teamNameText} numberOfLines={1}>
-                {teams?.away?.name || 'Away'}
-              </Text>
+              <View style={styles.nameContainer}>
+                {battingTeam === 2 && (
+                  <Icon name="cricket" size={14} color="#ffeb3b" style={styles.batIconRight} />
+                )}
+                {sport === 'tennis' && status?.serving === 2 && (
+                  <Icon name="tennis-ball" size={14} color="#A1FF0F" style={styles.batIconRight} />
+                )}
+                <Text style={styles.teamNameText} numberOfLines={1}>
+                  {teams?.away?.name || 'Away'}
+                </Text>
+              </View>
             </LinearGradient>
             <View style={styles.logoContainerRight}>
               {teams?.away?.logo ? (
@@ -312,6 +331,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
   },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  batIcon: { marginLeft: 6 },
+  batIconRight: { marginRight: 6 },
+  battingPill: {
+    borderColor: '#ffeb3b',
+    borderWidth: 1,
+  },
 
   logoImage: {
     width: 50,
@@ -349,7 +379,7 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: isTablet ? 24 : 16, // Smaller for Cricket scores
     fontWeight: '700',
   },
   scoreWin: {

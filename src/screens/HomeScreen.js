@@ -80,13 +80,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
     // If Aug-Dec, use current year (season just started)
     const footballSeason = currentMonth < 7 ? currentYear - 1 : currentYear;
 
-    if (sport === 'volleyball') {
-      navigation.navigate('VolleyballStandings', {
-        leagueId: league.leagueId,
-        leagueName: league.title,
-        season: footballSeason.toString(),
-      });
-    } else if (sport === 'basketball') {
+    if (sport === 'basketball') {
       // Basketball: "2024-2025" format, same logic as football
       const basketballStartYear =
         currentMonth < 7 ? currentYear - 1 : currentYear;
@@ -94,22 +88,6 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
         leagueId: league.leagueId,
         leagueName: league.title,
         season: `${basketballStartYear}-${basketballStartYear + 1}`,
-      });
-    } else if (sport === 'handball') {
-      // Handball: similar to football
-      const handballSeason = currentMonth < 7 ? currentYear - 1 : currentYear;
-      navigation.navigate('HandballStandings', {
-        leagueId: league.leagueId,
-        leagueName: league.title,
-        season: handballSeason.toString(),
-      });
-    } else if (sport === 'hockey') {
-      // Hockey: similar to football
-      const hockeySeason = currentMonth < 7 ? currentYear - 1 : currentYear;
-      navigation.navigate('HockeyStandings', {
-        leagueId: league.leagueId,
-        leagueName: league.title,
-        season: hockeySeason.toString(),
       });
     } else {
       // Football (default)
@@ -125,11 +103,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
     // ✅ Enable standings for handball too
     const hasStandings =
       selectedSport === 'football' ||
-      selectedSport === 'basketball' ||
-      selectedSport === 'volleyball' ||
-      selectedSport === 'handball' ||
-      selectedSport === 'hockey';
-    // ✅ Added handball
+      selectedSport === 'basketball';
 
     // ✅ Get sport-specific colors - consistent teal theme for all sports
     const getSportTheme = () => {
@@ -175,17 +149,11 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
               ) : (
                 <Icon
                   name={
-                    selectedSport === 'volleyball'
-                      ? 'volleyball'
-                      : selectedSport === 'basketball'
-                        ? 'basketball'
-                        : selectedSport === 'hockey'
-                          ? 'hockey-puck'
-                          : selectedSport === 'mma'
-                            ? 'boxing-glove'
-                            : selectedSport === 'handball'
-                              ? 'handball'
-                              : 'soccer'
+                    selectedSport === 'basketball'
+                      ? 'basketball'
+                      : selectedSport === 'mma'
+                        ? 'boxing-glove'
+                        : 'soccer'
                   }
                   size={currentIsTablet ? 28 : 24}
                   color={theme.color}
@@ -207,8 +175,8 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
                   </>
                 )}
                 <Text style={styles.matchCount} numberOfLines={1}>
-                  {section.data.length}{' '}
-                  {section.data.length === 1 ? 'match' : 'matches'}
+                  {section?.data?.length || 0}{' '}
+                  {(section?.data?.length || 0) === 1 ? 'match' : 'matches'}
                 </Text>
               </View>
             </View>
@@ -245,31 +213,21 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
     </View>
   );
 
+  // ✅ Get count of live fixtures
   const getLiveCount = () => {
+    if (!data || !Array.isArray(data)) return 0;
     return data.reduce((acc, section) => {
+      if (!section || !section.data || !Array.isArray(section.data)) {
+        return acc;
+      }
       const liveMatches = section.data.filter(f => {
         const status = f.status?.short;
         const liveStatuses = [
-          '1H',
-          '2H',
-          'HT',
-          'ET',
-          'BT',
-          'P',
-          'Q1',
-          'Q2',
-          'Q3',
-          'Q4',
-          'OT',
-          'P1',
-          'P2',
-          'P3',
-          'S1',
-          'S2',
-          'S3',
-          'S4',
-          'S5',
-          'PT',
+          '1H', '2H', 'HT', 'ET', 'BT', 'P',
+          'Q1', 'Q2', 'Q3', 'Q4', 'OT',
+          'P1', 'P2', 'P3',
+          'S1', 'S2', 'S3', 'S4', 'S5',
+          'TIE', 'PT', 'LIVE'
         ];
         return liveStatuses.includes(status);
       });
@@ -286,178 +244,182 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
     switch (selectedSport) {
       case 'basketball':
         return 'basketball';
-      case 'volleyball':
-        return 'volleyball';
-      case 'hockey':
-        return 'hockey-puck';
       case 'mma':
         return 'boxing-glove';
-      case 'handball':
-        return 'handball';
+      case 'tennis':
+        return 'tennis';
       default:
         return 'soccer';
     }
   };
 
-  if (loading && data.length === 0) {
+  if (loading && (!data || !Array.isArray(data) || data.length === 0)) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         <LinearGradient colors={gradients.background} style={styles.background}>
-          <View style={[styles.contentWrapper, maxContentWidth && { maxWidth: maxContentWidth }]}>
-            <EnhancedHeader
-              selectedSport={selectedSport}
-              onSelectSport={handleSportChange}
-              liveCount={0}
-              showLiveCount={!filter}
-            />
-            {renderShimmerLoading()}
-            <AdBanner />
-          </View>
-        </LinearGradient>
-      </SafeAreaView>
-    );
-  }
-
-  if (error && data.length === 0) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
-        <LinearGradient colors={gradients.background} style={styles.background}>
-          <View style={[styles.contentWrapper, maxContentWidth && { maxWidth: maxContentWidth }]}>
-            <EnhancedHeader
-              selectedSport={selectedSport}
-              onSelectSport={handleSportChange}
-              liveCount={0}
-              showLiveCount={!filter}
-            />
-            <View style={styles.centerContainer}>
-              <LinearGradient
-                colors={['rgba(213, 0, 0, 0.15)', 'rgba(213, 0, 0, 0.05)']}
-                style={styles.errorCard}
-              >
-                <View style={styles.errorIconWrapper}>
-                  <Icon
-                    name="wifi-off"
-                    size={currentIsTablet ? 48 : 40}
-                    color="#ff3d3d"
-                  />
-                </View>
-                <Text style={styles.errorText}>Connection Error</Text>
-                <Text style={styles.errorDetails}>{error}</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={refresh}>
-                  <Text style={styles.retryText}>Retry Connection</Text>
-                </TouchableOpacity>
-              </LinearGradient>
+          <SafeAreaView style={{ flex: 1 }}>
+            <View style={[styles.contentWrapper, maxContentWidth && { maxWidth: maxContentWidth }]}>
+              <EnhancedHeader
+                selectedSport={selectedSport}
+                onSelectSport={handleSportChange}
+                liveCount={0}
+                showLiveCount={!filter}
+              />
+              {renderShimmerLoading()}
+              <AdBanner />
             </View>
-            <AdBanner />
-          </View>
+          </SafeAreaView>
         </LinearGradient>
-      </SafeAreaView>
+      </View>
     );
   }
 
-  if (data.length === 0) {
+  if (error && (!data || !Array.isArray(data) || data.length === 0)) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         <LinearGradient colors={gradients.background} style={styles.background}>
-          <View style={[styles.contentWrapper, maxContentWidth && { maxWidth: maxContentWidth }]}>
-            <EnhancedHeader
-              selectedSport={selectedSport}
-              onSelectSport={handleSportChange}
-              liveCount={0}
-              showLiveCount={!filter}
-            />
-            <View style={styles.centerContainer}>
-              <View style={styles.emptyCard}>
-                <View style={styles.emptyIconWrapper}>
-                  <Icon
-                    name={getSportIcon()}
-                    size={currentIsTablet ? 54 : 48}
-                    color={getAccentColor()}
-                  />
-                </View>
-                <Text style={styles.emptyTitle}>No Matches Available</Text>
-                <Text style={styles.emptyText}>
-                  {filter === 'live'
-                    ? `There are no live ${selectedSport} matches right now.`
-                    : filter === 'upcoming'
-                      ? `Keep an eye out! No upcoming ${selectedSport} matches found.`
-                      : filter === 'finished'
-                        ? `No recently finished matches for ${selectedSport}.`
-                        : `No ${selectedSport} information available for this season.`}
-                </Text>
+          <SafeAreaView style={{ flex: 1 }}>
+            <View style={[styles.contentWrapper, maxContentWidth && { maxWidth: maxContentWidth }]}>
+              <EnhancedHeader
+                selectedSport={selectedSport}
+                onSelectSport={handleSportChange}
+                liveCount={0}
+                showLiveCount={!filter}
+              />
+              <View style={styles.centerContainer}>
+                <LinearGradient
+                  colors={['rgba(213, 0, 0, 0.15)', 'rgba(213, 0, 0, 0.05)']}
+                  style={styles.errorCard}
+                >
+                  <View style={styles.errorIconWrapper}>
+                    <Icon
+                      name="wifi-off"
+                      size={currentIsTablet ? 48 : 40}
+                      color="#ff3d3d"
+                    />
+                  </View>
+                  <Text style={styles.errorText}>Connection Error</Text>
+                  <Text style={styles.errorDetails}>{error}</Text>
+                  <TouchableOpacity style={styles.retryButton} onPress={refresh}>
+                    <Text style={styles.retryText}>Retry Connection</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
               </View>
+              <AdBanner />
             </View>
-            <AdBanner />
-          </View>
+          </SafeAreaView>
         </LinearGradient>
-      </SafeAreaView>
+      </View>
+    );
+  }
+
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <LinearGradient colors={gradients.background} style={styles.background}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <View style={[styles.contentWrapper, maxContentWidth && { maxWidth: maxContentWidth }]}>
+              <EnhancedHeader
+                selectedSport={selectedSport}
+                onSelectSport={handleSportChange}
+                liveCount={0}
+                showLiveCount={!filter}
+              />
+              <View style={styles.centerContainer}>
+                <View style={styles.emptyCard}>
+                  <View style={styles.emptyIconWrapper}>
+                    <Icon
+                      name={getSportIcon()}
+                      size={currentIsTablet ? 54 : 48}
+                      color={getAccentColor()}
+                    />
+                  </View>
+                  <Text style={styles.emptyTitle}>No Matches Available</Text>
+                  <Text style={styles.emptyText}>
+                    {filter === 'live'
+                      ? `There are no live ${selectedSport} matches right now.`
+                      : filter === 'upcoming'
+                        ? `Keep an eye out! No upcoming ${selectedSport} matches found.`
+                        : filter === 'finished'
+                          ? `No recently finished matches for ${selectedSport}.`
+                          : `No ${selectedSport} information available for this season.`}
+                  </Text>
+                </View>
+              </View>
+              <AdBanner />
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       <LinearGradient colors={gradients.background} style={styles.background}>
-        <View style={styles.contentWrapper}>
-          <EnhancedHeader
-            selectedSport={selectedSport}
-            onSelectSport={handleSportChange}
-            liveCount={getLiveCount()}
-            showLiveCount={!filter}
-          />
-
-        <DateSelector
-          selectedDate={selectedDate}
-          onSelectDate={date => {
-            console.log('📅 Date selected:', date.toISOString());
-            setSelectedDate(date);
-          }}
-        />
-
-        <SectionList
-          sections={data}
-          keyExtractor={item => item.fixtureId.toString()}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          stickySectionHeadersEnabled={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={loading}
-              onRefresh={refresh}
-              tintColor={getAccentColor()}
-              colors={[getAccentColor()]}
-              progressBackgroundColor="#1e293b"
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={styles.contentWrapper}>
+            <EnhancedHeader
+              selectedSport={selectedSport}
+              onSelectSport={handleSportChange}
+              liveCount={getLiveCount()}
+              showLiveCount={!filter}
             />
-          }
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
-        <AdBanner />
-        </View>
+
+            <DateSelector
+              selectedDate={selectedDate}
+              onSelectDate={date => {
+                console.log('📅 Date selected:', date.toISOString());
+                setSelectedDate(date);
+              }}
+            />
+
+            <SectionList
+              sections={data}
+              keyExtractor={item => (item.fixtureId || item.id || Math.random()).toString()}
+              renderItem={renderItem}
+              renderSectionHeader={renderSectionHeader}
+              stickySectionHeadersEnabled={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={loading}
+                  onRefresh={refresh}
+                  tintColor={getAccentColor()}
+                  colors={[getAccentColor()]}
+                  progressBackgroundColor="#1e293b"
+                />
+              }
+              style={{ flex: 1 }}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+            />
+            <AdBanner />
+          </View>
+        </SafeAreaView>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#0d1a1a', // Matching theme dark
   },
   background: { flex: 1 },
   contentWrapper: {
     width: '100%',
     alignSelf: 'center',
     flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   sectionHeaderWrapper: {
     paddingHorizontal: 20,
-    marginTop: 8,
+    // marginTop: 8,
     marginBottom: 12,
   },
   sectionHeader: {

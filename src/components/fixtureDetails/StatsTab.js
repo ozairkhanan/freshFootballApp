@@ -5,11 +5,13 @@ import LinearGradient from 'react-native-linear-gradient';
 import { Card, SectionHeader, StatBar, EmptyState } from '../common/CommonUI';
 import MomentumChart from './MomentumChart';
 import ShotChart from './ShotChart';
+import CricketStats from './CricketStats';
+import TennisStats from './TennisStats';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
 
-const StatsTab = ({ statistics, trendData, homeTeam, awayTeam, sport = 'football', shootPoints }) => {
+const StatsTab = ({ statistics, trendData, homeTeam, awayTeam, sport = 'football', shootPoints, cricketPlayers }) => {
   const [expandedCategories, setExpandedCategories] = useState({});
 
   const getSportColor = () => {
@@ -49,7 +51,37 @@ const StatsTab = ({ statistics, trendData, homeTeam, awayTeam, sport = 'football
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {renderMomentum()}
         {renderShotChart()}
-        <EmptyState title="No statistics available" icon="chart-bar" />
+        {sport === 'cricket' && (
+          <CricketStats 
+            players={cricketPlayers} 
+            homeTeamId={homeTeam?.id} 
+            awayTeamId={awayTeam?.id} 
+            sportColor={sportColor}
+          />
+        )}
+        {sport === 'tennis' && (
+          <TennisStats 
+            statistics={statistics} 
+            homeTeam={homeTeam} 
+            awayTeam={awayTeam} 
+            sportColor={sportColor}
+          />
+        )}
+        {!cricketPlayers && sport !== 'tennis' && <EmptyState title="No statistics available" icon="chart-bar" />}
+      </ScrollView>
+    );
+  }
+
+  if (sport === 'tennis') {
+    return (
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {renderMomentum()}
+        <TennisStats 
+          statistics={statistics} 
+          homeTeam={homeTeam} 
+          awayTeam={awayTeam} 
+          sportColor={sportColor}
+        />
       </ScrollView>
     );
   }

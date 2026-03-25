@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView, ActivityIndicator, Linking } from 'react-native';
 import Video from 'react-native-video';
 import remoteConfig from '@react-native-firebase/remote-config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const SplashAdScreen = ({ onFinish }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [videoUrl, setVideoUrl] = useState('');
+  const [redirectUrl, setRedirectUrl] = useState('');
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(false);
 
@@ -23,6 +24,7 @@ const SplashAdScreen = ({ onFinish }) => {
         show_splash_ad: false,
         ad_duration: 5,
         splash_ad_url: '',
+        splash_ad_redirect_url: '',
         splash_ad_playlist: '[]',
       });
 
@@ -39,6 +41,7 @@ const SplashAdScreen = ({ onFinish }) => {
       // 4. Get Values
       const showAd = remoteConfig().getValue('show_splash_ad').asBoolean();
       const defaultUrl = remoteConfig().getValue('splash_ad_url').asString();
+      const defaultRedirectUrl = remoteConfig().getValue('splash_ad_redirect_url').asString();
       const duration = remoteConfig().getValue('ad_duration').asNumber();
       const playlistStr = remoteConfig().getValue('splash_ad_playlist').asString();
 
@@ -52,6 +55,7 @@ const SplashAdScreen = ({ onFinish }) => {
       }
 
       let activeUrl = defaultUrl;
+      let activeRedirectUrl = defaultRedirectUrl;
       
       // 5. Rotation Logic
       try {
@@ -71,6 +75,7 @@ const SplashAdScreen = ({ onFinish }) => {
           
           const selectedAd = playlist[nextIndex];
           activeUrl = selectedAd.url;
+          activeRedirectUrl = selectedAd.redirectUrl || '';
           
           console.log(`🎬 SplashAd: Rotating to ad ${nextIndex + 1} of ${playlist.length} (Index: ${nextIndex})`);
           
@@ -93,7 +98,9 @@ const SplashAdScreen = ({ onFinish }) => {
       }
 
       console.log("🎬 SplashAd: FINAL Playing video:", activeUrl);
+      console.log("🔗 SplashAd: Redirect URL:", activeRedirectUrl);
       setVideoUrl(activeUrl);
+      setRedirectUrl(activeRedirectUrl);
       setTimeLeft(duration);
       setIsReady(true);
       
@@ -124,6 +131,32 @@ const SplashAdScreen = ({ onFinish }) => {
     );
   }
 
+  const handlePress = async () => {
+    console.log('🛡️ SplashAd: Press detected');
+    if (redirectUrl) {
+      let url = redirectUrl.trim();
+      if (!url.startsWith('http')) {
+        url = 'https://' + url;
+      }
+      
+      console.log('🔗 SplashAd: Attempting redirect to:', url);
+      try {
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+          await Linking.openURL(url);
+        } else {
+          console.warn("🛡️ SplashAd: Cannot open URL:", url);
+          // Fallback: try openURL anyway as canOpenURL is sometimes unreliable on Android
+          await Linking.openURL(url);
+        }
+      } catch (err) {
+        console.error("🛡️ SplashAd: Redirect error:", err);
+      }
+    } else {
+      console.log('🛡️ SplashAd: No redirect URL configured');
+    }
+  };
+
   if (error) {
     onFinish(); // Fallback if video fails to load
     return null;
@@ -131,18 +164,29 @@ const SplashAdScreen = ({ onFinish }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Video
-        source={{ uri: videoUrl }}
-        style={styles.video}
-        resizeMode="cover"
-        repeat={true}
-        onError={(e) => {
-          console.error("Video Error:", e);
-          setError(true);
-        }}
+
+      {/* Fix: wrap Video in View with pointerEvents="none" */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Video
+          source={{ uri: videoUrl }}
+          style={styles.video}
+          resizeMode="cover"
+          repeat={true}
+          onError={(e) => {
+            console.error("Video Error:", e);
+            setError(true);
+          }}
+        />
+      </View>
+
+      {/* Transparent touch catcher sits above video, below overlay */}
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={handlePress}
+        style={[StyleSheet.absoluteFill, { zIndex: 2 }]}
       />
-      
-      <View style={styles.overlay}>
+
+      <View style={styles.overlay} pointerEvents="box-none">
         {timeLeft > 0 ? (
           <View style={styles.timerBadge}>
             <Text style={styles.timerText}>Skip in {timeLeft}s</Text>
@@ -153,6 +197,7 @@ const SplashAdScreen = ({ onFinish }) => {
           </TouchableOpacity>
         )}
       </View>
+
     </SafeAreaView>
   );
 };
@@ -168,6 +213,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
+  touchable: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
   video: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -176,6 +225,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'flex-end',
     justifyContent: 'flex-start',
+    zIndex: 10,
   },
   timerBadge: {
     backgroundColor: 'rgba(0,0,0,0.6)',

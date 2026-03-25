@@ -1,4 +1,4 @@
-package com.sportsappfresh
+package com.play.goalkeeper.briefsstatistics
 
 import android.app.Application
 import com.facebook.react.PackageList

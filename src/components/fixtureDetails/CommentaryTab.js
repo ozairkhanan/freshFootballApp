@@ -10,11 +10,20 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { Card, EmptyState } from '../common/CommonUI';
+import CricketTimeline from './CricketTimeline';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
 
-const CommentaryTab = ({ commentary, sport = 'football' }) => {
+const CommentaryTab = ({ commentary, sport = 'football', timeline }) => {
+  if (sport === 'cricket' && timeline && timeline.length > 0) {
+    return (
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <CricketTimeline timeline={timeline} />
+      </ScrollView>
+    );
+  }
+
   if (!commentary || commentary.length === 0) {
     return (
       <ScrollView contentContainerStyle={styles.scrollContent}>

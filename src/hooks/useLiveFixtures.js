@@ -10,6 +10,8 @@ const LIVE_STATUSES = {
   mma: ['LIVE', 'IN', 'PF', 'WO', 'EOR'],
   // ✅ Handball live statuses (similar to football)
   handball: ['1H', '2H', 'HT', 'ET', 'BT', 'PT'],
+  cricket: ['LIVE'],
+  tennis: ['S1', 'S2', 'S3', 'S4', 'S5', 'TIE', 'LIVE'],
 };
 
 const useLiveFixtures = (
@@ -46,10 +48,16 @@ const useLiveFixtures = (
       const response = await getFixtures(sport, filter, dateParam);
 
       // Backend already returns grouped by league
-      setData(response.response || []);
+      let rawData = response?.response || [];
+      // Sanitize: ensure every section has a 'data' array to prevent SectionList crashes
+      const sanitizedData = Array.isArray(rawData) 
+        ? rawData.filter(section => section && Array.isArray(section.data))
+        : [];
+      
+      setData(sanitizedData);
       setLoading(false);
 
-      console.log(`✅ Loaded ${response.results} fixtures`);
+      console.log(`✅ Loaded ${response?.results || 0} fixtures`);
     } catch (err) {
       console.error('❌ Fetch error:', err);
       setError(err.message || 'Failed to fetch fixtures');
@@ -74,7 +82,9 @@ const useLiveFixtures = (
 
   // ✅ Get count of live fixtures
   const getLiveCount = useCallback(() => {
+    if (!data || !Array.isArray(data)) return 0;
     return data.reduce((acc, section) => {
+      if (!section || !section.data || !Array.isArray(section.data)) return acc;
       const liveMatches = section.data.filter(f => isLive(f));
       return acc + liveMatches.length;
     }, 0);

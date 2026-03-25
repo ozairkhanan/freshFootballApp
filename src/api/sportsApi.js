@@ -31,6 +31,8 @@ export const getFixtures = async (
       url = '/basketball/fixtures/realtime';
     } else if (sport === 'tennis') {
       url = '/tennis/fixtures/realtime';
+    } else if (sport === 'cricket') {
+      url = '/cricket/fixtures/realtime';
     }
 
     const response = await apiClient.get(url, {
@@ -214,9 +216,9 @@ export const getFixtureAnalysis = async (fixtureId, sport = 'football') => {
   try {
     console.log(`📊 Fetching analysis for fixture ${fixtureId} (${sport})`);
     
-    // Basketball has its own specific analysis endpoint
-    const url = sport === 'basketball' 
-      ? `/basketball/fixtures/${fixtureId}/analysis` 
+    // Basketball and Cricket have their own specific analysis endpoints
+    const url = sport === 'basketball' || sport === 'cricket'
+      ? `/${sport}/fixtures/${fixtureId}/analysis` 
       : `/fixtures/${fixtureId}/analysis`;
       
     const response = await apiClient.get(url, {

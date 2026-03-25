@@ -15,11 +15,9 @@ const isTablet = width >= 768;
 const SPORTS = [
   { id: 'football', name: 'Football', icon: 'soccer', color: '#00ffe7', enabled: true },
   { id: 'basketball', name: 'Basketball', icon: 'basketball', color: '#ff9800', enabled: true },
-  { id: 'hockey', name: 'Hockey', icon: 'hockey-puck', color: '#00bcd4', enabled: true },
-  { id: 'volleyball', name: 'Volleyball', icon: 'volleyball', color: '#9c27b0', enabled: true },
-  { id: 'handball', name: 'Handball', icon: 'handball', color: '#4caf50', enabled: true },
+  { id: 'cricket', name: 'Cricket', icon: 'cricket', color: '#ffeb3b', enabled: true },
+  { id: 'tennis', name: 'Tennis', icon: 'tennis', color: '#A1FF0F', enabled: true },  
   { id: 'mma', name: 'MMA', icon: 'boxing-glove', color: '#f44336', enabled: false },
-  { id: 'tennis', name: 'Tennis', icon: 'tennis', color: '#9e9e9e', enabled: false },
   { id: 'baseball', name: 'Baseball', icon: 'baseball', color: '#9e9e9e', enabled: false },
 ];
 

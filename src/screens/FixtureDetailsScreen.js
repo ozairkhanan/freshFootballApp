@@ -45,6 +45,8 @@
   import InjuriesTab from '../components/fixtureDetails/InjuriesTab';
   import PredictionTab from '../components/fixtureDetails/PredictionTab';
   import CommentaryTab from '../components/fixtureDetails/CommentaryTab';
+  import TennisTimeline from '../components/fixtureDetails/TennisTimeline';
+  import CricketTimeline from '../components/fixtureDetails/CricketTimeline';
 
   const FixtureDetailsScreen = ({ route, navigation }) => {
     const { fixtureId, sport = 'football', date: initialDate } = route.params;
@@ -133,7 +135,7 @@
         promiseLabels.push('lineups');
       }
 
-      if (['football', 'basketball'].includes(sport)) {
+      if (['football', 'basketball', 'cricket'].includes(sport)) {
         promises.push(getFixtureAnalysis(fixtureId, sport).catch(() => null));
         promiseLabels.push('h2h');
       } else if (fixtureInfo?.teams?.home?.id && fixtureInfo?.teams?.away?.id) {
@@ -236,6 +238,17 @@
       } else if (sport === 'basketball') {
         home = fixture.scores?.home?.total ?? 0;
         away = fixture.scores?.away?.total ?? 0;
+      } else if (sport === 'cricket') {
+        // Use normalized score strings from mapping service if available
+        // Take the LATEST inning for the header summary
+        const hInn = [...(fixture.teams?.home?.innings || []), ...(fixture.homeInnings || [])].slice(-1)[0];
+        const aInn = [...(fixture.teams?.away?.innings || []), ...(fixture.awayInnings || [])].slice(-1)[0];
+        
+        home = hInn ? `${hInn.runs}/${hInn.wickets}${hInn.overs !== undefined && hInn.overs !== null ? ` (${hInn.overs})` : ''}` : (fixture.teams?.home?.score || '0');
+        away = aInn ? `${aInn.runs}/${aInn.wickets}${aInn.overs !== undefined && aInn.overs !== null ? ` (${aInn.overs})` : ''}` : (fixture.teams?.away?.score || '0');
+      } else if (sport === 'tennis') {
+        home = fixture.scores?.home?.total ?? fixture.goals?.home ?? 0;
+        away = fixture.scores?.away?.total ?? fixture.goals?.away ?? 0;
       } else {
         home = fixture.goals?.home ?? 0;
         away = fixture.goals?.away ?? 0;
@@ -270,10 +283,11 @@
               awayTeam={fixture?.teams?.away}
               sport={sport}
               shootPoints={shootPoints}
+              cricketPlayers={fixture.players}
             />
           );
         case 'commentary':
-          return <CommentaryTab commentary={commentary} sport={sport} />;
+          return <CommentaryTab commentary={commentary} sport={sport} timeline={fixture.timeline} />;
         case 'events':
           return <EventsTab events={events} />;
         case 'lineups':
@@ -309,6 +323,13 @@
           );
         case 'prediction':
           return <PredictionTab prediction={prediction} />;
+        case 'timeline':
+          if (sport === 'tennis') {
+            return <TennisTimeline timeline={fixture.timeline} sportColor="#A1FF0F" />;
+          } else if (sport === 'cricket') {
+            return <CricketTimeline timeline={fixture.timeline || fixture.innings} />;
+          }
+          return null;
         default:
           return null;
       }
@@ -406,6 +427,7 @@
             venue={fixture.venue || venueDetails?.name}
             aggScore={fixture.agg_score}
             environment={fixture.environment}
+            battingTeam={fixture.batting_team}
           />
 
           {/* Tab bar */}
