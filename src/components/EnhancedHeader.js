@@ -1,11 +1,8 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
-  Dimensions,
-  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
@@ -15,8 +12,6 @@ import {
   isLargeTablet,
   getHorizontalPadding,
 } from '../utils/responsive';
-
-const { width } = Dimensions.get('window');
 
 // Keep original icon size
 const ICON_SIZE = 24;
@@ -113,7 +108,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingHorizontal: getHorizontalPadding(),
-    paddingTop: Platform.OS === 'ios' ? (isTablet ? (isLargeTablet ? 56 : 52) : 48) : 12,
+    paddingTop: 12,
     paddingBottom: isTablet ? 12 : 8,
   },
   headerTop: {
