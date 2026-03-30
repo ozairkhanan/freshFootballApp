@@ -45,5 +45,47 @@ target 'SportsAppFresh' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # [Antigravity] Fix for missing hermes.framework dSYM in Xcode 16 / RN 0.76
+    # This automatically injects a Run Script phase to generate the dSYM for Hermes
+    main_project = installer.aggregate_targets.first.user_project
+    main_target = main_project.targets.find { |t| t.name == 'SportsAppFresh' }
+    if main_target
+      script_name = '[RN] Fix Hermes dSYM'
+      phase = main_target.shell_script_build_phases.find { |p| p.name == script_name }
+      if phase.nil?
+        puts "[Antigravity] Adding Hermes dSYM generation script phase to #{main_target.name}"
+        phase = main_target.new_shell_script_build_phase(script_name)
+      else
+        puts "[Antigravity] Updating Hermes dSYM generation script phase in #{main_target.name}"
+      end
+      
+      phase.shell_script = <<~SCRIPT
+        # Locate the Hermes binary specifically for iOS Device (arm64)
+        # This avoids picking up the simulator binary which has a different UUID
+        HERMES_BIN=$(find "${PODS_ROOT}/hermes-engine" -path "*/ios-arm64/hermes.framework/hermes" -type f | head -n 1)
+
+        if [ -z "$HERMES_BIN" ]; then
+          # Fallback for older versions or different paths
+          HERMES_BIN=$(find "${PODS_ROOT}/hermes-engine" -name "hermes.framework" -type d -exec find {} -name "hermes" -type f \\; | head -n 1)
+        fi
+
+        if [ -z "$HERMES_BIN" ]; then
+          echo "Hermes binary not found, skipping dSYM generation."
+          exit 0
+        fi
+
+        DSYM_OUTPUT="${DWARF_DSYM_FOLDER_PATH}/hermes.framework.dSYM"
+
+        # [Antigravity] Always regenerate or ensure it exists for the archive
+        echo "Generating Hermes dSYM at: $DSYM_OUTPUT from $HERMES_BIN"
+        dsymutil "$HERMES_BIN" -o "$DSYM_OUTPUT"
+      SCRIPT
+      phase.show_env_vars_in_log = '0'
+      # Move to the end of build phases if it was just created or move it anyway
+      main_target.build_phases.delete(phase)
+      main_target.build_phases.insert(-1, phase)
+      main_project.save
+    end
   end
 end
