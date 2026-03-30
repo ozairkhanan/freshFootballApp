@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   View,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
+import PopupAd from '../components/PopupAd';
 import { isTabletStatic as isTablet } from '../utils/responsive';
 
 const Tab = createBottomTabNavigator();
@@ -24,7 +25,7 @@ const TabIcon = ({ iconName, focused, isLive }) => {
       <View style={styles.liveIconContainer}>
         <Icon
           name="broadcast"
-          size={20}
+          size={20} 
           color="#ff1744"
           style={styles.liveBroadcastIcon}
         />
@@ -50,131 +51,157 @@ const TabIcon = ({ iconName, focused, isLive }) => {
 const BottomTabNavigator = () => {
   console.log('🧭 BottomTabNavigator Rendered');
   const [selectedSport, setSelectedSport] = useState('football');
+  const [showPopupAd, setShowPopupAd] = useState(false);
+  const activeTabRef = useRef('Home');
 
   const handleSportChange = newSport => {
     setSelectedSport(newSport);
   };
 
+  // Tab press handler — shows popup ad when switching to a different tab
+  const createTabPressListener = (tabName) => ({
+    tabPress: (e) => {
+      if (activeTabRef.current !== tabName) {
+        console.log(`🎯 Tab switch: ${activeTabRef.current} → ${tabName}`);
+        activeTabRef.current = tabName;
+        setShowPopupAd(true);
+      }
+    },
+  });
+
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: '#A1FF0F', // Neon Green
-        tabBarInactiveTintColor: '#ffffff',
-        tabBarLabelStyle: styles.tabLabel,
-        tabBarShowLabel: true,
-        tabBarBackground: () => (
-          <View style={styles.tabBarBackgroundContainer}>
-            {/* Footer background - #202a28 */}
-            <View style={styles.tabBarGradient} />
-            {/* Top Border - stroke #545e5c size 2pt */}
-            <View style={styles.tabBarBorder} />
-          </View>
-        ),
-      }}
-    >
-      {/* 1. HOME tab */}
-      <Tab.Screen
-        name="Home"
-        options={{
-          tabBarLabel: 'Home',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="home-outline" focused={focused} />
+    <View style={{ flex: 1 }}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: styles.tabBar,
+          tabBarActiveTintColor: '#A1FF0F', // Neon Green
+          tabBarInactiveTintColor: '#ffffff',
+          tabBarLabelStyle: styles.tabLabel,
+          tabBarShowLabel: true,
+          tabBarBackground: () => (
+            <View style={styles.tabBarBackgroundContainer}>
+              {/* Footer background - #202a28 */}
+              <View style={styles.tabBarGradient} />
+              {/* Top Border - stroke #545e5c size 2pt */}
+              <View style={styles.tabBarBorder} />
+            </View>
           ),
         }}
       >
-        {({ navigation }) => (
-          <HomeScreen
-            filter="all"
-            selectedSport={selectedSport}
-            onSportChange={handleSportChange}
-            navigation={navigation}
-          />
-        )}
-      </Tab.Screen>
+        {/* 1. HOME tab */}
+        <Tab.Screen
+          name="Home"
+          options={{
+            tabBarLabel: 'Home',
+            tabBarIcon: ({ focused }) => (
+              <TabIcon iconName="home-outline" focused={focused} />
+            ),
+          }}
+          listeners={createTabPressListener('Home')}
+        >
+          {({ navigation }) => (
+            <HomeScreen
+              filter="all"
+              selectedSport={selectedSport}
+              onSportChange={handleSportChange}
+              navigation={navigation}
+            />
+          )}
+        </Tab.Screen>
 
-      {/* 2. LIVE tab */}
-      <Tab.Screen
-        name="Live"
-        options={{
-          tabBarLabel: 'Live',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon isLive={true} focused={focused} />
-          ),
-          tabBarLabelStyle: { display: 'none' },
-        }}
-      >
-        {({ navigation }) => (
-          <HomeScreen
-            filter="live"
-            selectedSport={selectedSport}
-            onSportChange={handleSportChange}
-            navigation={navigation}
-          />
-        )}
-      </Tab.Screen>
+        {/* 2. LIVE tab */}
+        <Tab.Screen
+          name="Live"
+          options={{
+            tabBarLabel: 'Live',
+            tabBarIcon: ({ focused }) => (
+              <TabIcon isLive={true} focused={focused} />
+            ),
+            tabBarLabelStyle: { display: 'none' },
+          }}
+          listeners={createTabPressListener('Live')}
+        >
+          {({ navigation }) => (
+            <HomeScreen
+              filter="live"
+              selectedSport={selectedSport}
+              onSportChange={handleSportChange}
+              navigation={navigation}
+            />
+          )}
+        </Tab.Screen>
 
-      {/* 3. FINISHED tab */}
-      <Tab.Screen
-        name="Finished"
-        options={{
-          tabBarLabel: 'Finished',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="check-circle-outline" focused={focused} />
-          ),
-        }}
-      >
-        {({ navigation }) => (
-          <HomeScreen
-            filter="finished"
-            selectedSport={selectedSport}
-            onSportChange={handleSportChange}
-            navigation={navigation}
-          />
-        )}
-      </Tab.Screen>
+        {/* 3. FINISHED tab */}
+        <Tab.Screen
+          name="Finished"
+          options={{
+            tabBarLabel: 'Finished',
+            tabBarIcon: ({ focused }) => (
+              <TabIcon iconName="check-circle-outline" focused={focused} />
+            ),
+          }}
+          listeners={createTabPressListener('Finished')}
+        >
+          {({ navigation }) => (
+            <HomeScreen
+              filter="finished"
+              selectedSport={selectedSport}
+              onSportChange={handleSportChange}
+              navigation={navigation}
+            />
+          )}
+        </Tab.Screen>
 
-      {/* 4. UPCOMING tab */}
-      <Tab.Screen
-        name="Upcoming"
-        options={{
-          tabBarLabel: 'Upcoming',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="calendar-clock" focused={focused} />
-          ),
-        }}
-      >
-        {({ navigation }) => (
-          <HomeScreen
-            filter="upcoming"
-            selectedSport={selectedSport}
-            onSportChange={handleSportChange}
-            navigation={navigation}
-          />
-        )}
-      </Tab.Screen>
+        {/* 4. UPCOMING tab */}
+        <Tab.Screen
+          name="Upcoming"
+          options={{
+            tabBarLabel: 'Upcoming',
+            tabBarIcon: ({ focused }) => (
+              <TabIcon iconName="calendar-clock" focused={focused} />
+            ),
+          }}
+          listeners={createTabPressListener('Upcoming')}
+        >
+          {({ navigation }) => (
+            <HomeScreen
+              filter="upcoming"
+              selectedSport={selectedSport}
+              onSportChange={handleSportChange}
+              navigation={navigation}
+            />
+          )}
+        </Tab.Screen>
 
-      {/* 5. FOLLOWING tab */}
-      <Tab.Screen
-        name="Following"
-        options={{
-          tabBarLabel: 'Following',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="heart-outline" focused={focused} />
-          ),
-        }}
-      >
-        {({ navigation }) => (
-          <HomeScreen
-            filter="following"
-            selectedSport={selectedSport}
-            onSportChange={handleSportChange}
-            navigation={navigation}
-          />
-        )}
-      </Tab.Screen>
-    </Tab.Navigator>
+        {/* 5. FOLLOWING tab */}
+        <Tab.Screen
+          name="Following"
+          options={{
+            tabBarLabel: 'Following',
+            tabBarIcon: ({ focused }) => (
+              <TabIcon iconName="heart-outline" focused={focused} />
+            ),
+          }}
+          listeners={createTabPressListener('Following')}
+        >
+          {({ navigation }) => (
+            <HomeScreen
+              filter="following"
+              selectedSport={selectedSport}
+              onSportChange={handleSportChange}
+              navigation={navigation}
+            />
+          )}
+        </Tab.Screen>
+      </Tab.Navigator>
+
+      {/* Popup Ad Overlay — rendered above the entire tab navigator */}
+      <PopupAd
+        visible={showPopupAd}
+        onClose={() => setShowPopupAd(false)}
+      />
+    </View>
   );
 };
 
