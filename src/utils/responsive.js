@@ -33,10 +33,7 @@ export const getResponsiveWidth = () => {
   const { width } = getDimensions();
   if (isLargeTablet()) {
     // For very large tablets, limit max width for better readability
-    return Math.min(width, 900);
-  }
-  if (isTablet()) {
-    return Math.min(width, 800);
+    return Math.min(width, 1200);
   }
   return width;
 };
@@ -64,8 +61,8 @@ export const getSpacing = (mobile, tablet, largeTablet) => {
 
 // Max width for content containers
 export const getMaxContentWidth = () => {
-  if (isLargeTablet()) return 900;
-  if (isTablet()) return 800;
+  if (isLargeTablet()) return 1200;
+  if (isTablet()) return '100%';
   return '100%';
 };
 

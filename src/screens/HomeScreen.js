@@ -35,7 +35,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
   // Calculate responsive values dynamically based on current screen width
   const currentIsTablet = screenWidth >= 768;
   const currentIsLargeTablet = screenWidth >= 1024;
-  const maxContentWidth = currentIsLargeTablet ? 900 : currentIsTablet ? 800 : undefined;
+  const maxContentWidth = currentIsLargeTablet ? 1200 : currentIsTablet ? screenWidth : undefined;
   const horizontalPadding = currentIsLargeTablet ? 32 : currentIsTablet ? 24 : 16;
 
   const { data, loading, error, refresh } = useLiveFixtures(
@@ -285,7 +285,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
                 <LinearGradient
                   colors={['rgba(213, 0, 0, 0.15)', 'rgba(213, 0, 0, 0.05)']}
                   style={[styles.errorCard, { 
-                    maxWidth: currentIsTablet ? 600 : 400,
+                    maxWidth: screenWidth,
                     padding: currentIsTablet ? 48 : 32,
                     borderRadius: currentIsTablet ? 28 : 24,
                   }]}
@@ -524,7 +524,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 61, 61, 0.2)',
     width: '100%',
-    maxWidth: isTablet ? 500 : 400,
   },
   errorIconWrapper: {
     width: 80,
@@ -563,7 +562,6 @@ const styles = StyleSheet.create({
   emptyCard: {
     alignItems: 'center',
     width: '100%',
-    maxWidth: isTablet ? 500 : 400,
   },
   emptyIconWrapper: {
     width: isTablet ? 120 : 100,
