@@ -39,7 +39,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
   const horizontalPadding = currentIsLargeTablet ? 32 : currentIsTablet ? 24 : 16;
 
   const { data, loading, error, refresh } = useLiveFixtures(
-    15000,
+    30000,
     selectedSport,
     filter,
     selectedDate,
@@ -131,14 +131,13 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
           activeOpacity={hasStandings ? 0.7 : 1}
           disabled={!hasStandings}
         >
-          {/* <LinearGradient
+          <LinearGradient
             colors={theme.gradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.sectionGradient}
-          > */}
+          >
           {/* League Logo/Badge */}
-          <View style={styles.sectionGradient}>
             <View style={[styles.leagueBadge, theme.badge]}>
               {section.logo ? (
                 <Image
@@ -182,15 +181,9 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
             </View>
 
             {hasStandings && (
-              // <LinearGradient
-              //   colors={[`${theme.color}40`, `${theme.color}10`]}
-              //   style={styles.expandIconWrapper}
-              // >
               <Icon name="table-pivot" size={20} color="#fff" style={styles.expandIconWrapper} />
             )}
-          </View>
-
-          {/* </LinearGradient> */}
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     );
@@ -291,7 +284,11 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
               <View style={styles.centerContainer}>
                 <LinearGradient
                   colors={['rgba(213, 0, 0, 0.15)', 'rgba(213, 0, 0, 0.05)']}
-                  style={styles.errorCard}
+                  style={[styles.errorCard, { 
+                    maxWidth: currentIsTablet ? 600 : 400,
+                    padding: currentIsTablet ? 48 : 32,
+                    borderRadius: currentIsTablet ? 28 : 24,
+                  }]}
                 >
                   <View style={styles.errorIconWrapper}>
                     <Icon
@@ -362,7 +359,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       <LinearGradient colors={gradients.background} style={styles.background}>
         <SafeAreaView style={{ flex: 1 }}>
-          <View style={styles.contentWrapper}>
+          <View style={[styles.contentWrapper, maxContentWidth && { maxWidth: maxContentWidth }]}>
             <EnhancedHeader
               selectedSport={selectedSport}
               onSelectSport={handleSportChange}

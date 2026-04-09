@@ -5,7 +5,7 @@ const BASE_URL = 'https://api.taleemimarkaz.pk/api/v1';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },

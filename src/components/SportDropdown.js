@@ -4,13 +4,10 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-const { width } = Dimensions.get('window');
-const isTablet = width >= 768;
 
 const SPORTS = [
   { id: 'football', name: 'Football', icon: 'soccer', color: '#00ffe7', enabled: true },
@@ -23,6 +20,8 @@ const SPORTS = [
 
 const SportDropdown = ({ selectedSport, onSelectSport }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const selectedSportData = SPORTS.find(s => s.id === selectedSport);
 
   const handleSelect = sport => {
@@ -66,7 +65,11 @@ const SportDropdown = ({ selectedSport, onSelectSport }) => {
       </TouchableOpacity>
 
       {isOpen && (
-        <View style={styles.dropdownMenu}>
+        <View style={[styles.dropdownMenu, {
+          top: isTablet ? 64 : 56,
+          width: isTablet ? 280 : (width * 0.6) > 210 ? (width * 0.6) : 210,
+          maxWidth: width - 32,
+        }]}>
           <LinearGradient
             colors={['rgba(29, 45, 44, 0.98)', 'rgba(42, 74, 68, 0.98)']}
             style={styles.menuGradient}
@@ -103,6 +106,7 @@ const SportDropdown = ({ selectedSport, onSelectSport }) => {
                 <Text
                   style={[
                     styles.menuText,
+                    { fontSize: isTablet ? 15 : 14 },
                     selectedSport === sport.id && styles.menuTextSelected,
                     !sport.enabled && styles.menuTextDisabled,
                   ]}
@@ -165,10 +169,7 @@ const styles = StyleSheet.create({
   },
   dropdownMenu: {
     position: 'absolute',
-    top: isTablet ? 64 : 56,
     left: 0,
-    width: isTablet ? 240 : (width * 0.6) > 210 ? (width * 0.6) : 210,
-    maxWidth: width - 32,
     borderRadius: 20,
     overflow: 'hidden',
     elevation: 20,
@@ -210,7 +211,6 @@ const styles = StyleSheet.create({
   },
   menuText: {
     color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: isTablet ? 15 : 14,
     fontWeight: '600',
     flex: 1,
   },

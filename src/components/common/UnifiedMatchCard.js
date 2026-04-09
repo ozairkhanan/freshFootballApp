@@ -1,16 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TeamLogo, StatusBadge } from './CommonUI';
-
-const { width } = Dimensions.get('window');
-const isTablet = width >= 768;
 
 /**
  * UnifiedMatchCard - A single, high-performance match card for all sports
  */
 const UnifiedMatchCard = ({ fixture, sport = 'football', onPress, index }) => {
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const data = normalizeFixtureData(fixture, sport);
   if (!data) return null;
 
