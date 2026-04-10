@@ -34,7 +34,7 @@
 		00E356F21AD99517003FC87E /* SportsAppFreshTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SportsAppFreshTests.m; sourceTree = "<group>"; };
 		076C8CCC2F76C0A60084A93E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		076C8CE02F76C4A60084A93E /* SportsAppFresh/GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SportsAppFresh/GoogleService-Info.plist"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* SportsAppFresh.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SportsAppFresh.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Livescores Sports Statistics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Livescores Sports Statistics.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = SportsAppFresh/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = SportsAppFresh/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = SportsAppFresh/Info.plist; sourceTree = "<group>"; };
@@ -137,7 +137,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* SportsAppFresh.app */,
+				13B07F961A680F5B00A75B9A /* Livescores Sports Statistics.app */,
 				00E356EE1AD99517003FC87E /* SportsAppFreshTests.xctest */,
 			);
 			name = Products;
@@ -198,7 +198,7 @@
 			);
 			name = SportsAppFresh;
 			productName = SportsAppFresh;
-			productReference = 13B07F961A680F5B00A75B9A /* SportsAppFresh.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Livescores Sports Statistics.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -536,7 +536,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12;
+				MARKETING_VERSION = 1.13;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -566,7 +566,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12;
+				MARKETING_VERSION = 1.13;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
