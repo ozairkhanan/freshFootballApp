@@ -18,7 +18,7 @@ import { gradients } from '../theme';
 import useLiveFixtures from '../hooks/useLiveFixtures';
 import UnifiedMatchCard from '../components/common/UnifiedMatchCard';
 import EnhancedHeader from '../components/EnhancedHeader';
-import { LoadingCard } from '../components/common/CommonUI';
+import { LoadingCard, LoadingSpinner } from '../components/common/CommonUI';
 import DateSelector from '../components/DateSelector';
 import {
   isTabletStatic as isTablet,
@@ -259,7 +259,7 @@ const HomeScreen = ({ filter, selectedSport, onSportChange, navigation }) => {
                 liveCount={0}
                 showLiveCount={!filter}
               />
-              {renderShimmerLoading()}
+              <LoadingSpinner color={getAccentColor()} />
               <AdBanner />
             </View>
           </SafeAreaView>

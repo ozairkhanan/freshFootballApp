@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Platform, StatusBar, Animated } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Platform, StatusBar, Animated, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width } = Dimensions.get('window');
@@ -150,6 +150,12 @@ export const LoadingCard = ({ sport = 'football' }) => {
   );
 };
 
+export const LoadingSpinner = ({ color = '#00ffe7', size = 'large' }) => (
+  <View style={styles.spinnerContainer}>
+    <ActivityIndicator size={size} color={color} />
+  </View>
+);
+
 const styles = StyleSheet.create({
   logoContainer: {
     justifyContent: 'center',
@@ -291,5 +297,11 @@ const styles = StyleSheet.create({
   },
   skeleton: {
     backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  spinnerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
   },
 });
